@@ -3,8 +3,7 @@ import { superAPI } from '../../api';
 import { Modal, ConfirmDialog, PageHeader, SearchInput, Spinner, Field, EmptyState } from '../../components/ui';
 import { Plus, Edit2, Power, Shield, CreditCard, Copy, Check, ChevronDown, ChevronUp, Users, Layers } from 'lucide-react';
 import toast from 'react-hot-toast';
-import GymAdminsModal from '../../components/super/GymAdminsModal';
-import GymPlansModal from '../../components/super/GymPlansModal';
+import GymAdminsModal, { GymPlansModal } from '../../components/super/GymAdminsModal';
 
 const THEMES = [
   { value: 'classic_red', label: 'Estilo Clásico (Rojo)' },

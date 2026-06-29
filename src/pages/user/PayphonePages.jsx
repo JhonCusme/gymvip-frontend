@@ -420,5 +420,3 @@ Esta autorizaci√≥n puede ser revocada en cualquier momento desde la configuraci√
     </UserLayout>
   );
 }
-
-import toast from 'react-hot-toast';
