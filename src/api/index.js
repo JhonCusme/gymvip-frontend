@@ -5,16 +5,21 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 const api = axios.create({ baseURL: API_URL });
 
 // Inyectar token en cada request
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('gymvip_token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  // Inyectar gym slug si existe
-  const gymSlug = localStorage.getItem('gymvip_slug');
-  if (gymSlug && !config.params?.gym) {
-    config.params = { ...config.params, gym: gymSlug };
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401) {
+      const slug = localStorage.getItem('gymvip_slug');
+      localStorage.removeItem('gymvip_token');
+      localStorage.removeItem('gymvip_user');
+      localStorage.removeItem('gymvip_gym');
+      localStorage.removeItem('gymvip_role');
+      localStorage.removeItem('gymvip_slug');
+      window.location.href = slug ? `/login?gym=${slug}` : '/login';
+    }
+    return Promise.reject(err);
   }
-  return config;
-});
+);
 
 // Manejar errores globalmente
 api.interceptors.response.use(
