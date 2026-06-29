@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
@@ -35,18 +35,23 @@ const Placeholder = ({ label }) => <div className="flex items-center justify-cen
 
 function PrivateRoute({ children, allowedRoles }) {
   const { user, role, loading } = useAuth();
-  const [searchParams] = useSearchParams();
-  const gymSlug = localStorage.getItem('gymvip_slug');
+  const location = useLocation();
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="w-6 h-6 border-2 border-red-600 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="w-6 h-6 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+
   if (!user) {
-    const redirectTo = gymSlug ? `/login?gym=${gymSlug}` : '/login';
-    return <Navigate to={redirectTo} replace />;
+    // Preservar la URL completa para redirigir después del login
+    return <Navigate to={`/login`} state={{ from: location }} replace />;
   }
+
   if (allowedRoles && !allowedRoles.includes(role) && !user.isSuperAdmin) {
-    const redirectTo = gymSlug ? `/login?gym=${gymSlug}` : '/login';
-    return <Navigate to={redirectTo} replace />;
+    return <Navigate to="/login" replace />;
   }
+
   return children;
 }
 
