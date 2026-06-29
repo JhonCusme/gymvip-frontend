@@ -39,9 +39,12 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const data = await login(form.cedula, form.password, gymSlug || undefined);
+console.log('DATA LOGIN:', JSON.stringify(data));
+
 
      // Redirigir según rol
 const role = data.role || data.user?.role;
+console.log('ROLE:', role);
 if (data.user.isSuperAdmin && !gymSlug) {
   navigate('/super/gyms');
 } else if (role === 'admin') {
@@ -171,3 +174,7 @@ if (data.user.isSuperAdmin && !gymSlug) {
     </div>
   );
 }
+const data = await login(form.cedula, form.password, gymSlug || undefined);
+console.log('DATA LOGIN:', JSON.stringify(data));
+const role = data.role || data.user?.role;
+console.log('ROLE:', role);
