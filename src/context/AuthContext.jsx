@@ -25,7 +25,8 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (cedula, password, gymSlug) => {
     const res = await authAPI.login({ cedula, password, gym: gymSlug });
-    const { token, user: u, gym: g, role: r } = res.data;
+    const { token, user: u, gym: g } = res.data;
+const r = res.data.role || u?.role;
 
     localStorage.setItem('gymvip_token', token);
     localStorage.setItem('gymvip_user', JSON.stringify(u));
