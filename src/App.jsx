@@ -44,9 +44,11 @@ function PrivateRoute({ children, allowedRoles }) {
   );
 
   if (!user) {
-    // Preservar la URL completa para redirigir después del login
-    return <Navigate to={`/login`} state={{ from: location }} replace />;
-  }
+  const urlParams = new URLSearchParams(window.location.search);
+  const gymFromUrl = urlParams.get('gym') || localStorage.getItem('gymvip_slug');
+  const redirectTo = gymFromUrl ? `/login?gym=${gymFromUrl}` : '/login';
+  return <Navigate to={redirectTo} replace />;
+}
 
   if (allowedRoles && !allowedRoles.includes(role) && !user.isSuperAdmin) {
     return <Navigate to="/login" replace />;
