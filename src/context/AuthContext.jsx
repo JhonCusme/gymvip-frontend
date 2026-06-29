@@ -9,6 +9,13 @@ export const AuthProvider = ({ children }) => {
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const applyGymTheme = (gymData) => {
+    if (!gymData) return;
+    const root = document.documentElement;
+    if (gymData.primaryColor) root.style.setProperty('--color-primary', gymData.primaryColor);
+    if (gymData.secondaryColor) root.style.setProperty('--color-secondary', gymData.secondaryColor);
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('gymvip_token');
     const savedUser = localStorage.getItem('gymvip_user');
@@ -16,9 +23,21 @@ export const AuthProvider = ({ children }) => {
     const savedRole = localStorage.getItem('gymvip_role');
 
     if (token && savedUser) {
-      setUser(JSON.parse(savedUser));
-      if (savedGym) setGym(JSON.parse(savedGym));
-      if (savedRole) setRole(savedRole);
+      try {
+        setUser(JSON.parse(savedUser));
+        if (savedGym) {
+          const gymData = JSON.parse(savedGym);
+          setGym(gymData);
+          applyGymTheme(gymData);
+        }
+        if (savedRole) setRole(savedRole);
+      } catch (e) {
+        localStorage.removeItem('gymvip_token');
+        localStorage.removeItem('gymvip_user');
+        localStorage.removeItem('gymvip_gym');
+        localStorage.removeItem('gymvip_role');
+        localStorage.removeItem('gymvip_slug');
+      }
     }
     setLoading(false);
   }, []);
@@ -26,7 +45,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (cedula, password, gymSlug) => {
     const res = await authAPI.login({ cedula, password, gym: gymSlug });
     const { token, user: u, gym: g } = res.data;
-const r = res.data.role || u?.role;
+    const r = res.data.role || u?.role;
 
     localStorage.setItem('gymvip_token', token);
     localStorage.setItem('gymvip_user', JSON.stringify(u));
@@ -53,13 +72,6 @@ const r = res.data.role || u?.role;
     setGym(null);
     setRole(null);
     window.location.href = '/login';
-  };
-
-  const applyGymTheme = (gymData) => {
-    if (!gymData) return;
-    const root = document.documentElement;
-    if (gymData.primaryColor) root.style.setProperty('--color-primary', gymData.primaryColor);
-    if (gymData.secondaryColor) root.style.setProperty('--color-secondary', gymData.secondaryColor);
   };
 
   const isSuperAdmin = user?.isSuperAdmin || role === 'super_admin';
