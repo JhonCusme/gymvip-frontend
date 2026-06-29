@@ -40,18 +40,19 @@ export default function LoginPage() {
     try {
       const data = await login(form.cedula, form.password, gymSlug || undefined);
 
-      // Redirigir según rol
-      if (data.user.isSuperAdmin && !gymSlug) {
-        navigate('/super/gyms');
-      } else if (data.role === 'admin') {
-        navigate('/dashboard');
-      } else if (data.role === 'recepcionista') {
-        navigate('/recepcion');
-      } else if (data.role === 'instructor') {
-        navigate('/instructor');
-      } else {
-        navigate('/usuario/home');
-      }
+     // Redirigir según rol
+const role = data.role || data.user?.role;
+if (data.user.isSuperAdmin && !gymSlug) {
+  navigate('/super/gyms');
+} else if (role === 'admin') {
+  navigate('/dashboard');
+} else if (role === 'recepcionista') {
+  navigate('/recepcion');
+} else if (role === 'instructor') {
+  navigate('/instructor');
+} else {
+  navigate('/usuario/home');
+}
     } catch (err) {
       toast.error(err.response?.data?.error || 'Error al iniciar sesión');
     } finally {
