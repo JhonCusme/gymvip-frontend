@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #E85D04;
+  --color-secondary: #000000;
+  --color-background: #0C0A09;
+  --color-surface: #1C1917;
+  --color-text: #FFF7ED;
+  --color-accent: #F97316;
+  --border-radius: 6px;
+  --font-family: 'Inter', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-background);
+  color: var(--color-text);
+  min-height: 100vh;
+}
+
+.super-admin-layout {
+  --color-background: #f9fafb;
+  --color-surface: #ffffff;
+  --color-text: #111827;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+.super-admin-layout ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); }
+
+.btn-primary {
+  @apply px-4 py-2 rounded-lg font-semibold text-white transition-all duration-200 hover:opacity-90 active:scale-95;
+  background-color: var(--color-primary);
+}
+
+.btn-secondary {
+  @apply px-4 py-2 rounded-lg font-semibold transition-all duration-200 hover:opacity-80 active:scale-95;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+}
+
+.card {
+  @apply p-5 rounded-xl;
+  background-color: var(--color-surface);
+}
+
+.input-field {
+  @apply w-full px-3 py-2.5 rounded-lg text-sm outline-none transition-all;
+  background-color: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--color-text);
+}
+.input-field:focus { border-color: var(--color-primary); }
+.input-field::placeholder { opacity: 0.4; }
+
+.super-admin-layout .input-field {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  color: #111827;
+}
+
+.badge-active   { @apply px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400; }
+.badge-inactive { @apply px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/20 text-red-400; }
+.badge-warning  { @apply px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400; }
+.badge-info     { @apply px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400; }
+
+.modal-overlay {
+  @apply fixed inset-0 z-50 flex items-center justify-center p-4;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+}
+.modal-box {
+  @apply w-full max-w-md rounded-2xl p-6 shadow-2xl;
+  background-color: var(--color-surface);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.super-admin-layout .modal-box { background-color: #ffffff; }
+
+.sidebar-item {
+  @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer;
+  color: rgba(255,255,255,0.6);
+}
+.sidebar-item:hover { color: white; background: rgba(255,255,255,0.08); }
+.sidebar-item.active { color: white; background-color: var(--color-primary); }
+
+.super-admin-layout .sidebar-item { color: #6b7280; }
+.super-admin-layout .sidebar-item:hover { color: #111827; background: #f3f4f6; }
+.super-admin-layout .sidebar-item.active { color: white; background-color: #DC2626; }
+
+.data-table { @apply w-full text-sm; }
+.data-table th { @apply text-left py-3 px-4 font-semibold text-xs uppercase tracking-wider opacity-50 border-b; border-color: rgba(255,255,255,0.1); }
+.data-table td { @apply py-3 px-4 border-b; border-color: rgba(255,255,255,0.05); }
+.super-admin-layout .data-table th { border-color: #e5e7eb; }
+.super-admin-layout .data-table td { border-color: #f3f4f6; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in { animation: fadeIn 0.2s ease-out; }
