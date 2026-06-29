@@ -127,19 +127,25 @@ export function GymPlansModal({ gym, onClose }) {
 
   useEffect(() => { load(); }, []);
 
-  const handleCreate = async () => {
-    if (!form.name) return toast.error('Nombre requerido');
-    setSaving(true);
-    try {
-      await superAPI.createGymPlan(gym.id, form);
-      toast.success('Plan creado');
-      setForm({ name: '', description: '', durationValue: 1, durationUnit: 'months', price: 0, sessionsPerWeek: '', isActive: true });
-      setShowForm(false);
-      load();
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'Error al crear plan');
-    } finally { setSaving(false); }
-  };
+ const handleCreate = async () => {
+  if (!form.name) return toast.error('Nombre requerido');
+  setSaving(true);
+  try {
+    await superAPI.createGymPlan(gym.id, {
+      ...form,
+      durationValue: parseInt(form.durationValue) || 1,
+      price: parseFloat(form.price) || 0,
+      sessionsPerWeek: form.sessionsPerWeek ? parseInt(form.sessionsPerWeek) : null,
+      isActive: form.isActive
+    });
+    toast.success('Plan creado');
+    setForm({ name: '', description: '', durationValue: 1, durationUnit: 'months', price: 0, sessionsPerWeek: '', isActive: true });
+    setShowForm(false);
+    load();
+  } catch (err) {
+    toast.error(err.response?.data?.error || 'Error al crear plan');
+  } finally { setSaving(false); }
+};
 
   const unitLabel = { days: 'días', weeks: 'semanas', months: 'mes(es)', years: 'año(s)' };
 
