@@ -52,6 +52,7 @@ export const superAPI = {
   createGym: (data) => api.post('/super/gyms', data),
   updateGym: (id, data) => api.put(`/super/gyms/${id}`, data),
   toggleGym: (id) => api.patch(`/super/gyms/${id}/toggle`),
+  deleteGym: (id) => api.delete(`/super/gyms/${id}`),
   getGymAdmins: (id) => api.get(`/super/gyms/${id}/admins`),
   addGymAdmin: (id, data) => api.post(`/super/gyms/${id}/admins`, data),
   removeGymAdmin: (gymId, userId) => api.delete(`/super/gyms/${gymId}/admins/${userId}`),

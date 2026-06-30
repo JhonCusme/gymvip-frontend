@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { superAPI } from '../../api';
 import { Modal, ConfirmDialog, PageHeader, SearchInput, Spinner, Field, EmptyState } from '../../components/ui';
-import { Plus, Edit2, Power, Shield, CreditCard, Copy, Check, ChevronDown, ChevronUp, Users, Layers } from 'lucide-react';
+import { Plus, Edit2, Power, Shield, CreditCard, Copy, Check, ChevronDown, ChevronUp, Users, Layers, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import GymAdminsModal, { GymPlansModal } from '../../components/super/GymAdminsModal';
 
@@ -33,6 +33,7 @@ export default function SuperGymsPage() {
   const [form, setForm] = useState(DEFAULT_FORM);
   const [saving, setSaving] = useState(false);
   const [confirmToggle, setConfirmToggle] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const [adminsGym, setAdminsGym] = useState(null);
   const [plansGym, setPlansGym] = useState(null);
   const [copied, setCopied] = useState('');
@@ -85,6 +86,14 @@ export default function SuperGymsPage() {
     } catch { toast.error('Error al cambiar estado'); }
   };
 
+  const handleDelete = async (gym) => {
+    try {
+      await superAPI.deleteGym(gym.id);
+      toast.success('Gimnasio eliminado');
+      load();
+    } catch { toast.error('Error al eliminar gimnasio'); }
+  };
+
   const copyText = (text, key) => {
     navigator.clipboard.writeText(text);
     setCopied(key);
@@ -129,6 +138,7 @@ export default function SuperGymsPage() {
               gym={gym}
               onEdit={() => openEdit(gym)}
               onToggle={() => setConfirmToggle(gym)}
+              onDelete={() => setConfirmDelete(gym)}
               onAdmins={() => setAdminsGym(gym)}
               onPlans={() => setPlansGym(gym)}
               getLinks={getLinks}
@@ -260,6 +270,14 @@ export default function SuperGymsPage() {
         message={`¿Confirmas ${confirmToggle?.is_active ? 'desactivar' : 'activar'} el gimnasio "${confirmToggle?.name}"?`}
         danger={confirmToggle?.is_active}
       />
+      <ConfirmDialog
+        open={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={() => handleDelete(confirmDelete)}
+        title="Eliminar gimnasio"
+        message={`¿Estás seguro de eliminar "${confirmDelete?.name}"? Se eliminarán TODOS sus datos. Esta acción NO se puede deshacer.`}
+        danger
+      />
 
       {/* Modales de admins y planes */}
       {adminsGym && <GymAdminsModal gym={adminsGym} onClose={() => setAdminsGym(null)} />}
@@ -271,8 +289,8 @@ export default function SuperGymsPage() {
 // ============================================================
 // GYM CARD
 // ============================================================
-function GymCard({ gym, onEdit, onToggle, onAdmins, onPlans, getLinks, copyText, copied }) {
-  const [expanded, setExpanded] = useState(false);
+function GymCard({ gym, onEdit, onToggle, onDelete, onAdmins, onPlans, getLinks, copyText, copied }) {
+const [expanded, setExpanded] = useState(false);
   const links = getLinks(gym.slug);
   const appUrl = window.location.origin;
 
@@ -296,12 +314,15 @@ function GymCard({ gym, onEdit, onToggle, onAdmins, onPlans, getLinks, copyText,
               <p className="text-xs text-gray-400">{gym.slug}</p>
             </div>
           </div>
-          <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5">
             <button onClick={onEdit} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
               <Edit2 size={15} />
             </button>
             <button onClick={onToggle} className={`p-1.5 rounded-lg transition-colors ${gym.is_active ? 'text-red-400 hover:bg-red-50' : 'text-green-500 hover:bg-green-50'}`}>
               <Power size={15} />
+            </button>
+            <button onClick={onDelete} className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors" title="Eliminar gimnasio">
+              <Trash2 size={15} />
             </button>
           </div>
         </div>

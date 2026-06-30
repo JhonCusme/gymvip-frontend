@@ -62,17 +62,23 @@ export const AuthProvider = ({ children }) => {
     return res.data;
   };
 
-  const logout = () => {
-    localStorage.removeItem('gymvip_token');
-    localStorage.removeItem('gymvip_user');
-    localStorage.removeItem('gymvip_gym');
-    localStorage.removeItem('gymvip_role');
-    localStorage.removeItem('gymvip_slug');
-    setUser(null);
-    setGym(null);
-    setRole(null);
+const logout = () => {
+  const slug = localStorage.getItem('gymvip_slug');
+  const currentRole = localStorage.getItem('gymvip_role');
+  localStorage.removeItem('gymvip_token');
+  localStorage.removeItem('gymvip_user');
+  localStorage.removeItem('gymvip_gym');
+  localStorage.removeItem('gymvip_role');
+  localStorage.removeItem('gymvip_slug');
+  setUser(null);
+  setGym(null);
+  setRole(null);
+  if (currentRole === 'super_admin' || !slug) {
     window.location.href = '/login';
-  };
+  } else {
+    window.location.href = `/login?gym=${slug}`;
+  }
+};
 
   const isSuperAdmin = user?.isSuperAdmin || role === 'super_admin';
   const isAdmin = role === 'admin' || isSuperAdmin;

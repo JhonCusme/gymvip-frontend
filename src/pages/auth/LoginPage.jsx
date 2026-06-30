@@ -15,6 +15,7 @@ export default function LoginPage() {
   const [loadingGym, setLoadingGym] = useState(false);
   const [form, setForm] = useState({ cedula: '', password: '' });
   const [loading, setLoading] = useState(false);
+const [errorMsg, setErrorMsg] = useState('');
 
   // Cargar info del gym si viene en la URL
   useEffect(() => {
@@ -58,7 +59,8 @@ if (data.user.isSuperAdmin && !gymSlug) {
   navigate('/usuario/home');
 }
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Error al iniciar sesión');
+      const msg = err.response?.data?.error || 'Cédula o contraseña incorrectos';
+      setErrorMsg(msg);
     } finally {
       setLoading(false);
     }
@@ -162,6 +164,12 @@ if (data.user.isSuperAdmin && !gymSlug) {
               {loading ? <Spinner size={18} className="text-white" /> : null}
               {loading ? 'Ingresando...' : 'Ingresar'}
             </button>
+            {errorMsg && (
+              <div className="mt-2 p-3 rounded-xl text-sm text-center font-medium"
+                style={{ background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.3)', color: '#f87171' }}>
+                ⚠ {errorMsg}
+              </div>
+            )}
           </div>
         </form>
 

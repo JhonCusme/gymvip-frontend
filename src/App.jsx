@@ -20,6 +20,7 @@ import AdminDashboardPage from './pages/admin/DashboardPage';
 import AdminUsersPage from './pages/admin/UsersPage';
 import { AdminSessionsPage, AdminSchedulesPage, AdminInstructorsPage, AdminReceptionistsPage } from './pages/admin/AdminSubPages';
 import { AdminPaymentsPage, AdminReportsPage, AdminValidateEntryPage, AdminAttendancePage, AdminAuditPage } from './pages/admin/AdminReportPages';
+import { AdminMembershipsPage, AdminSettingsPage } from './pages/admin/AdminSettingsPages';
 
 // Recepción
 import { ReceptionDashboardPage, ReceptionClientsPage, ReceptionClientDetailPage, ReceptionMembershipsPage, ReceptionPaymentsPage, ReceptionScannerPage, ReceptionSchedulesPage, ReceptionAttendancePage } from './pages/reception/ReceptionPages';
@@ -77,7 +78,7 @@ function AppRoutes() {
       <Route path="/dashboard/*" element={<PrivateRoute allowedRoles={['admin','super_admin']}><AdminLayout><Routes>
         <Route index element={<AdminDashboardPage />} />
         <Route path="users" element={<AdminUsersPage />} />
-        <Route path="memberships" element={<Placeholder label="Membresías" />} />
+        <Route path="memberships" element={<AdminMembershipsPage />} />
         <Route path="sessions" element={<AdminSessionsPage />} />
         <Route path="workouts" element={<Placeholder label="Entrenamientos WOD" />} />
         <Route path="schedules" element={<AdminSchedulesPage />} />
@@ -88,7 +89,7 @@ function AppRoutes() {
         <Route path="validate" element={<AdminValidateEntryPage />} />
         <Route path="attendance" element={<AdminAttendancePage />} />
         <Route path="audit" element={<AdminAuditPage />} />
-        <Route path="settings" element={<Placeholder label="Configuración Admin" />} />
+        <Route path="settings" element={<AdminSettingsPage />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes></AdminLayout></PrivateRoute>} />
 
