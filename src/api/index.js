@@ -20,15 +20,17 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      // Leer el slug ANTES de limpiar
-      const slug = localStorage.getItem('gymvip_slug');
-      localStorage.clear();
-      // Redirigir con el slug si existe
-      if (slug) {
-        window.location.href = `/login?gym=${slug}`;
-      } else {
-        window.location.href = '/login';
+      // No redirigir si ya estamos en login
+      if (window.location.pathname === '/login') {
+        return Promise.reject(err);
       }
+      const slug = localStorage.getItem('gymvip_slug');
+      localStorage.removeItem('gymvip_token');
+      localStorage.removeItem('gymvip_user');
+      localStorage.removeItem('gymvip_gym');
+      localStorage.removeItem('gymvip_role');
+      localStorage.removeItem('gymvip_slug');
+      window.location.href = slug ? `/login?gym=${slug}` : '/login';
     }
     return Promise.reject(err);
   }
