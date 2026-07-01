@@ -85,6 +85,14 @@ export const superAPI = {
   getThemes: () => api.get('/super/themes'),
 };
 
+export const wodAPI = {
+  getWods: (params) => api.get('/admin/wods', { params }),
+  getWod: (date) => api.get(`/admin/wods/${date}`),
+  saveWod: (data) => api.post('/admin/wods', data),
+  deleteWod: (date) => api.delete(`/admin/wods/${date}`),
+  getUserWod: () => api.get('/usuario/wod'),
+};
+
 // ============================================================
 // ADMIN
 // ============================================================
