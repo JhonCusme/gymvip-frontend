@@ -114,6 +114,7 @@ const [newPassword, setNewPassword] = useState('');
   };
 
   const handleResetPassword = async () => {
+    console.log('Reseteando contraseña para:', showResetPass?.id, 'nueva pass:', newPassword);
     if (!newPassword || newPassword.length < 6) return toast.error('Mínimo 6 caracteres');
     try {
       await adminAPI.resetPassword(showResetPass.id, { newPassword });
@@ -122,7 +123,7 @@ const [newPassword, setNewPassword] = useState('');
       setNewPassword('');
     } catch { toast.error('Error al resetear contraseña'); }
   };
-  
+
   return (
     <div className="fade-in">
       <PageHeader
@@ -196,10 +197,10 @@ const [newPassword, setNewPassword] = useState('');
       setShowCreate(true);
     } catch { toast.error('Error al cargar usuario'); }
   }}
-  title="Editar"
-  className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all">
-  <Edit2 size={14} />
-</button>
+       title="Editar"
+      className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all">
+      <Edit2 size={14} />
+     </button>
                       <button onClick={() => { setShowMem(u); setMemForm(EMPTY_MEM); }}
                         title="Activar membresía"
                         className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all">
@@ -421,6 +422,30 @@ const [newPassword, setNewPassword] = useState('');
             </div>
           </div>
         )}
+        {/* Modal Resetear Contraseña */}
+      <Modal open={!!showResetPass} onClose={() => setShowResetPass(null)} title="Resetear Contraseña">
+        {showResetPass && (
+          <div className="flex flex-col gap-4">
+            <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
+              <p className="text-xs opacity-50">Usuario</p>
+              <p className="font-bold">{showResetPass.name}</p>
+              <p className="text-xs opacity-40">Cédula: {showResetPass.cedula}</p>
+            </div>
+            <Field label="Nueva Contraseña" required>
+              <input className="input-field" type="password" placeholder="Mínimo 6 caracteres"
+                value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+            </Field>
+            <div className="flex gap-3">
+              <button onClick={() => setShowResetPass(null)} className="btn-secondary flex-1 text-sm">Cancelar</button>
+              <button onClick={handleResetPassword}
+                className="btn-primary flex-1 text-sm"
+                style={{ backgroundColor: gym?.primaryColor || '#E85D04' }}>
+                Resetear Contraseña
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
       </Modal>
     </div>
   );
