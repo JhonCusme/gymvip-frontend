@@ -35,6 +35,13 @@ export default function WodPage() {
   };
 
   useEffect(() => { load(); }, [currentMonth, currentYear]);
+  useEffect(() => { 
+    load(); 
+  }, [currentMonth, currentYear]);
+
+  useEffect(() => {
+    selectDate(today.toISOString().split('T')[0]);
+  }, []);
 
   const selectDate = async (date) => {
     setSelectedDate(date);
