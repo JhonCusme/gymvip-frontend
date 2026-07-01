@@ -206,7 +206,14 @@ export function AdminSettingsPage() {
                 <Field label="Teléfono"><input className="input-field" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} /></Field>
               </div>
               <div className="flex justify-end mt-4">
-                <button className="btn-primary text-sm px-6" style={{ backgroundColor: primaryColor }}>Guardar Cambios</button>
+                <button onClick={async () => {
+                  try {
+                    await api.put('/admin/profile', { name: form.name, email: form.email, phone: form.phone });
+                    toast.success('Perfil actualizado');
+                  } catch { toast.error('Error al guardar'); }
+                }} className="btn-primary text-sm px-6" style={{ backgroundColor: primaryColor }}>
+                  Guardar Cambios
+                </button>
               </div>
             </div>
           )}
