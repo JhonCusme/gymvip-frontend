@@ -53,14 +53,14 @@ export const uploadAPI = {
   uploadGymLogo: (file) => {
     const formData = new FormData();
     formData.append('logo', file);
-    return api.post('/super/gyms/upload-logo', formData, {
+    return api.post('/super/upload-logo', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
   },
   uploadInstructorPhoto: (file) => {
     const formData = new FormData();
     formData.append('photo', file);
-    return api.post('/admin/instructors/upload-photo', formData, {
+    return api.post('/admin/upload-photo', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
   }
