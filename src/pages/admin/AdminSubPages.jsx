@@ -263,6 +263,15 @@ export function AdminInstructorsPage() {
     finally { setSaving(false); }
   };
 
+  const handleDeleteInstructor = async (id) => {
+    if (!window.confirm('¿Desactivar este instructor?')) return;
+    try {
+      await adminAPI.deleteInstructor(id);
+      toast.success('Instructor desactivado');
+      load();
+    } catch { toast.error('Error al desactivar'); }
+  };
+
   return (
     <div className="fade-in">
       <PageHeader title="Instructores"
@@ -284,9 +293,15 @@ export function AdminInstructorsPage() {
                   <p className="text-xs opacity-40">{i.phone}</p>
                   <p className="text-xs opacity-30">{i.schedule_count} horarios asignados</p>
                 </div>
-                <span className={`ml-auto flex-shrink-0 ${i.is_active ? 'badge-active' : 'badge-inactive'}`}>
-                  {i.is_active ? 'Activo' : 'Inactivo'}
-                </span>
+               <div className="ml-auto flex-shrink-0 flex items-center gap-1">
+                  <span className={i.is_active ? 'badge-active' : 'badge-inactive'}>
+                    {i.is_active ? 'Activo' : 'Inactivo'}
+                  </span>
+                  <button onClick={() => handleDeleteInstructor(i.id)}
+                    className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-red-500/20 hover:text-red-400 transition-all">
+                    <Trash2 size={13} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -354,6 +369,15 @@ export function AdminReceptionistsPage() {
     finally { setSaving(false); }
   };
 
+  const handleDelete = async (userId) => {
+    if (!window.confirm('¿Desactivar este recepcionista?')) return;
+    try {
+      await adminAPI.updateUser(userId, { isActive: false });
+      toast.success('Recepcionista desactivado');
+      load();
+    } catch { toast.error('Error al desactivar'); }
+  };
+
   return (
     <div className="fade-in">
       <PageHeader title="Recepcionistas"
@@ -379,9 +403,8 @@ export function AdminReceptionistsPage() {
                     <td className="text-xs opacity-60">{r.phone || '—'}</td>
                     <td><span className={r.is_active ? 'badge-active' : 'badge-inactive'}>{r.is_active ? 'Activo' : 'Inactivo'}</span></td>
                     <td><div className="flex gap-1">
-                      <button className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all"><Edit2 size={13} /></button>
-                      <button className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all"><Key size={13} /></button>
-                      <button className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-red-500/20 hover:text-red-400 transition-all"><Trash2 size={13} /></button>
+                      <button onClick={() => handleDelete(r.id)} title="Desactivar recepcionista"
+                        className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-red-500/20 hover:text-red-400 transition-all"><Trash2 size={13} /></button>
                     </div></td>
                   </tr>
                 ))}
