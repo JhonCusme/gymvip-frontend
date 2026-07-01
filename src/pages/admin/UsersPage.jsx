@@ -173,7 +173,7 @@ export default function AdminUsersPage() {
       const usr = res.data.user;
       setForm({ 
         cedula: usr.cedula, name: usr.name, email: usr.email || '', 
-        phone: usr.phone || '', birthDate: usr.birth_date || '', 
+        phone: usr.phone || '', birthDate: usr.birth_date ? usr.birth_date.split('T')[0] : '', 
         emergencyContactName: usr.emergency_contact_name || '', 
         emergencyContactPhone: usr.emergency_contact_phone || '', 
         password: '', confirmPassword: '', role: 'user' 
