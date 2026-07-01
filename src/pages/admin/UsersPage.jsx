@@ -422,7 +422,8 @@ const [newPassword, setNewPassword] = useState('');
             </div>
           </div>
         )}
-        {/* Modal Resetear Contraseña */}
+      </Modal>
+         {/* Modal Resetear Contraseña */}
       <Modal open={!!showResetPass} onClose={() => setShowResetPass(null)} title="Resetear Contraseña">
         {showResetPass && (
           <div className="flex flex-col gap-4">
@@ -445,7 +446,6 @@ const [newPassword, setNewPassword] = useState('');
             </div>
           </div>
         )}
-      </Modal>
       </Modal>
     </div>
   );
