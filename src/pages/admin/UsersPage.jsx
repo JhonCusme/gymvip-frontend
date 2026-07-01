@@ -9,7 +9,7 @@ import { useAuth } from '../../context/AuthContext';
 const EMPTY_USER = { cedula: '', name: '', email: '', phone: '', birthDate: '',
   emergencyContactName: '', emergencyContactPhone: '', password: '', confirmPassword: '', role: 'user' };
 
-const EMPTY_MEM = { membershipTypeId: '', method: 'efectivo', amount: '', notes: '' };
+const EMPTY_MEM = { membershipTypeId: '', method: 'efectivo', amount: '', notes: '', startDate: '' };
 
 export default function AdminUsersPage() {
   const { gym } = useAuth();
@@ -77,7 +77,8 @@ export default function AdminUsersPage() {
       const type = memTypes.find(t => t.id === memForm.membershipTypeId);
       await adminAPI.activateMembership(showMem.id, {
         ...memForm,
-        amount: memForm.amount || type?.price
+        amount: memForm.amount || type?.price,
+        startDate: memForm.startDate || null
       });
       toast.success('Membresía activada exitosamente');
       setShowMem(null);
@@ -323,6 +324,11 @@ export default function AdminUsersPage() {
             <Field label="Notas (opcional)">
               <textarea className="input-field" rows={2} placeholder="Observaciones adicionales..."
                 value={memForm.notes} onChange={e => setMemForm({ ...memForm, notes: e.target.value })} />
+            </Field>
+           <Field label="Fecha de inicio (opcional)">
+              <input className="input-field" type="date" value={memForm.startDate}
+                onChange={e => setMemForm({ ...memForm, startDate: e.target.value })}
+                placeholder="Dejar vacío para usar fecha de hoy" />
             </Field>
             <div className="flex gap-3">
               <button onClick={() => setShowMem(null)} className="btn-secondary flex-1 text-sm">Cancelar</button>
