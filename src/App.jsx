@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { UserHomePage, UserSchedulePage, UserQRPage, UserProfilePage, UserEditProfilePage, UserBookingsPage, UserPaymentHistoryPage, UserNotificationsPage, UserWodPage } from './pages/user/UserPages';
 
 // Layouts
 import SuperAdminLayout from './components/layout/SuperAdminLayout';
@@ -31,7 +30,7 @@ import { ReceptionDashboardPage, ReceptionClientsPage, ReceptionClientDetailPage
 import { InstructorTodayPage, InstructorRoutinesPage, InstructorAttendancePage, InstructorProfilePage } from './pages/instructor/InstructorPages';
 
 // Usuario
-import { UserHomePage, UserSchedulePage, UserQRPage, UserProfilePage, UserEditProfilePage, UserBookingsPage, UserPaymentHistoryPage, UserNotificationsPage } from './pages/user/UserPages';
+import { UserHomePage, UserSchedulePage, UserQRPage, UserProfilePage, UserEditProfilePage, UserBookingsPage, UserPaymentHistoryPage, UserNotificationsPage, UserWodPage } from './pages/user/UserPages';
 import { UserPayphonePage, UserPaymentResultPage, UserAutoChargePage } from './pages/user/PayphonePages';
 
 const Placeholder = ({ label }) => <div className="flex items-center justify-center h-64 opacity-30 text-sm">{label}</div>;
