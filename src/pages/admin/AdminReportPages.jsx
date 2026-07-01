@@ -5,6 +5,7 @@ import { Wallet, TrendingUp, Users, Clock, RefreshCw, QrCode } from 'lucide-reac
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import QRScanner from '../../components/ui/QRScanner';
 
 // ============================================================
 // PAGOS
@@ -253,32 +254,14 @@ export function AdminValidateEntryPage() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-        {/* Scanner area */}
-        <div className="rounded-xl p-5" style={{ background: '#1a1a1a' }}>
-          <p className="font-semibold mb-3">Escanear Código QR</p>
-          <div className="rounded-xl flex flex-col items-center justify-center h-48 mb-3"
-            style={{ background: '#111', border: scanning ? `2px solid ${primaryColor}` : '2px solid rgba(255,255,255,0.06)' }}>
-            {scanning ? (
-              <div className="text-center">
-                <div className="w-16 h-16 border-4 rounded-full animate-pulse mx-auto mb-3" style={{ borderColor: primaryColor }} />
-                <p className="text-xs opacity-50">Escaneando...</p>
-              </div>
-            ) : (
-              <div className="text-center opacity-30">
-                <QrCode size={40} className="mx-auto mb-2" />
-                <p className="text-xs">Presiona "Iniciar" para escanear</p>
-              </div>
-            )}
+        {/* Área QR */}
+          <div className="rounded-xl p-5 mb-4" style={{ background: '#1a1a1a' }}>
+            <p className="font-semibold mb-3">Escanear Código QR</p>
+            <QRScanner
+              onScan={(code) => { setCode(code); validate(code); }}
+              onError={(err) => console.error('QR error:', err)}
+            />
           </div>
-          <button
-            onClick={() => setScanning(!scanning)}
-            className="w-full py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all"
-            style={{ backgroundColor: primaryColor }}>
-            <QrCode size={16} /> {scanning ? 'Detener Escáner' : 'Iniciar Escáner'}
-          </button>
-          <p className="text-xs opacity-30 mt-3">• Pide al usuario que muestre su código QR desde la app móvil</p>
-          <p className="text-xs opacity-30">• El sistema registrará automáticamente la entrada del usuario</p>
-        </div>
 
         {/* Manual + resultado */}
         <div className="flex flex-col gap-4">

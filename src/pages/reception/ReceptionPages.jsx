@@ -6,6 +6,7 @@ import { Users, CreditCard, CalendarCheck, DollarSign, QrCode, Plus, ChevronRigh
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import QRScanner from '../../components/ui/QRScanner';
 
 // ============================================================
 // DASHBOARD RECEPCIÓN
@@ -531,11 +532,12 @@ export function ReceptionScannerPage() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const validate = async () => {
-    if (!code) return toast.error('Ingresa un código o cédula');
+  const validate = async (directCode) => {
+    const codeToValidate = directCode || code;
+    if (!codeToValidate) return toast.error('Ingresa un código o cédula');
     setLoading(true); setResult(null);
     try {
-      const r = await receptionAPI.validateEntry({ code });
+      const r = await receptionAPI.validateEntry({ code: codeToValidate });
       setResult(r.data);
       setCode('');
     } catch { toast.error('Error al validar'); }
@@ -549,15 +551,10 @@ export function ReceptionScannerPage() {
       {/* Área QR */}
       <div className="w-full rounded-xl p-5 mb-4" style={{ background: '#1a1a1a' }}>
         <p className="font-semibold mb-3">Escanear Código QR</p>
-        <div className="rounded-xl h-48 flex flex-col items-center justify-center mb-3"
-          style={{ background: '#0a0a0a' }}>
-          <QrCode size={40} className="mb-2 opacity-20" />
-          <p className="text-xs opacity-30">Presiona "Iniciar" para escanear</p>
-        </div>
-        <button className="w-full py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2"
-          style={{ backgroundColor: primaryColor }}>
-          <QrCode size={16} /> Iniciar Escáner
-        </button>
+        <QRScanner
+          onScan={(code) => { setCode(code); validate(); }}
+          onError={(err) => console.error('QR error:', err)}
+        />
       </div>
 
       {/* Manual */}
@@ -567,7 +564,7 @@ export function ReceptionScannerPage() {
           <input className="input-field flex-1" placeholder="Ingresa el código QR o cédula..."
             value={code} onChange={e => setCode(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && validate()} />
-          <button onClick={validate} disabled={loading}
+          <button onClick={() => validate()} disabled={loading}
             className="px-4 py-2.5 rounded-lg font-semibold text-white text-sm flex items-center gap-2"
             style={{ backgroundColor: primaryColor }}>
             {loading ? <Spinner size={14} className="text-white" /> : null}
