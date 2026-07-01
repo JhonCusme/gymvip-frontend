@@ -101,13 +101,14 @@ export default function AdminUsersPage() {
     return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400">Sin membresía</span>;
   };
  
-  const handleDeleteUser = async (userId) => {
-    if (!window.confirm('¿Eliminar este usuario?')) return;
+  const handleToggleUser = async (u) => {
+    const accion = u.is_active ? 'desactivar' : 'activar';
+    if (!window.confirm(`¿${accion} este usuario?`)) return;
     try {
-      await adminAPI.updateUser(userId, { isActive: false });
-      toast.success('Usuario desactivado');
+      await adminAPI.updateUser(u.id, { isActive: !u.is_active });
+      toast.success(`Usuario ${accion === 'activar' ? 'activado' : 'desactivado'}`);
       load();
-    } catch { toast.error('Error al eliminar usuario'); }
+    } catch { toast.error('Error al actualizar usuario'); }
   };
 
   return (
@@ -196,8 +197,9 @@ export default function AdminUsersPage() {
                         className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all">
                         <Key size={14} />
                       </button>
-                      <button onClick={() => handleDeleteUser(u.id)} title="Eliminar usuario"
-                        className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-red-500/20 hover:text-red-400 transition-all">
+                      <button onClick={() => handleToggleUser(u)} 
+                        title={u.is_active ? 'Desactivar usuario' : 'Activar usuario'}
+                        className={`p-1.5 rounded-lg opacity-40 hover:opacity-100 transition-all ${u.is_active ? 'hover:bg-red-500/20 hover:text-red-400' : 'hover:bg-green-500/20 hover:text-green-400'}`}>
                         <Trash2 size={14} />
                       </button>
                     </div>
