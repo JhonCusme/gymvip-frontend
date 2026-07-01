@@ -390,18 +390,16 @@ const [expanded, setExpanded] = useState(false);
 
         {expanded && (
           <div className="space-y-1.5 mb-3">
-            {links.map((link) => (
-              <div key={link.label} className="flex items-center justify-between gap-2 bg-gray-50 rounded-lg px-3 py-1.5">
-                <span className="text-xs text-gray-500 w-24 flex-shrink-0">{link.label}</span>
-                <span className="text-xs text-blue-600 truncate flex-1">{link.url}</span>
-                <button
-                  onClick={() => copyText(link.url, link.label)}
-                  className="text-gray-400 hover:text-gray-700 transition-colors flex-shrink-0"
-                >
-                  {copied === link.label ? <Check size={13} className="text-green-500" /> : <Copy size={13} />}
-                </button>
-              </div>
-            ))}
+           <div className="flex items-center justify-between gap-2 bg-gray-50 rounded-lg px-3 py-1.5 mb-2">
+              <span className="text-xs text-gray-500 w-24 flex-shrink-0">Acceso gym</span>
+              <span className="text-xs text-blue-600 truncate flex-1">{`${window.location.origin}/login?gym=${gym.slug}`}</span>
+              <button
+                onClick={() => copyText(`${window.location.origin}/login?gym=${gym.slug}`, 'acceso')}
+                className="text-gray-400 hover:text-gray-700 transition-colors flex-shrink-0"
+              >
+                {copied === 'acceso' ? <Check size={13} className="text-green-500" /> : <Copy size={13} />}
+              </button>
+            </div>
 
             {/* PayPhone config */}
             <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide mt-2 mb-1">Configuración PayPhone</p>
