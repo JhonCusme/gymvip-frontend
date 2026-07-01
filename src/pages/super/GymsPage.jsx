@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { superAPI } from '../../api';
+import { superAPI, uploadAPI } from '../../api';
 import { Modal, ConfirmDialog, PageHeader, SearchInput, Spinner, Field, EmptyState } from '../../components/ui';
 import { Plus, Edit2, Power, Shield, CreditCard, Copy, Check, ChevronDown, ChevronUp, Users, Layers, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -32,6 +32,7 @@ export default function SuperGymsPage() {
   const [editGym, setEditGym] = useState(null);
   const [form, setForm] = useState(DEFAULT_FORM);
   const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [confirmToggle, setConfirmToggle] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [adminsGym, setAdminsGym] = useState(null);
@@ -160,22 +161,41 @@ export default function SuperGymsPage() {
           {/* Logo */}
           <div className="flex items-center gap-4">
             <div
-              className="w-16 h-16 rounded-xl flex items-center justify-center text-white text-2xl font-black flex-shrink-0"
+              className="w-16 h-16 rounded-xl flex items-center justify-center text-white text-2xl font-black flex-shrink-0 overflow-hidden"
               style={{ backgroundColor: form.primaryColor || '#E85D04' }}
             >
               {form.logoUrl
-                ? <img src={form.logoUrl} alt="" className="w-full h-full object-contain rounded-xl" />
+                ? <img src={form.logoUrl} alt="" className="w-full h-full object-contain" />
                 : form.name?.charAt(0)?.toUpperCase() || '?'
               }
             </div>
-            <Field label="URL del logo" className="flex-1">
+            <div className="flex-1 flex flex-col gap-2">
+              <label className="cursor-pointer">
+                <div className="btn-secondary text-xs text-center py-2 flex items-center justify-center gap-2">
+                  {uploadingLogo ? <Spinner size={12} /> : '📁'}
+                  {uploadingLogo ? 'Subiendo...' : 'Subir imagen'}
+                </div>
+                <input type="file" accept="image/*" className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    if (file.size > 2 * 1024 * 1024) return toast.error('La imagen no puede superar 2MB');
+                    setUploadingLogo(true);
+                    try {
+                      const res = await uploadAPI.uploadGymLogo(file);
+                      setForm({ ...form, logoUrl: res.data.url });
+                      toast.success('Logo subido exitosamente');
+                    } catch { toast.error('Error al subir la imagen'); }
+                    finally { setUploadingLogo(false); }
+                  }} />
+              </label>
               <input
-                className="input-field"
-                placeholder="https://... o pegar URL del logo"
+                className="input-field text-xs"
+                placeholder="o pegar URL del logo"
                 value={form.logoUrl}
                 onChange={(e) => setForm({ ...form, logoUrl: e.target.value })}
               />
-            </Field>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">

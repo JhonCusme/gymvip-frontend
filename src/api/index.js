@@ -47,6 +47,26 @@ export const authAPI = {
 };
 
 // ============================================================
+// Upload Photo
+// ============================================================
+export const uploadAPI = {
+  uploadGymLogo: (file) => {
+    const formData = new FormData();
+    formData.append('logo', file);
+    return api.post('/super/gyms/upload-logo', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
+  uploadInstructorPhoto: (file) => {
+    const formData = new FormData();
+    formData.append('photo', file);
+    return api.post('/admin/instructors/upload-photo', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  }
+};
+
+// ============================================================
 // SUPER ADMIN
 // ============================================================
 export const superAPI = {
