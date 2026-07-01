@@ -209,6 +209,12 @@ export function AdminSettingsPage() {
                 <button onClick={async () => {
                   try {
                     await api.put('/admin/profile', { name: form.name, email: form.email, phone: form.phone });
+                    // Actualizar localStorage
+                    const savedUser = JSON.parse(localStorage.getItem('gymvip_user') || '{}');
+                    savedUser.name = form.name;
+                    savedUser.email = form.email;
+                    savedUser.phone = form.phone;
+                    localStorage.setItem('gymvip_user', JSON.stringify(savedUser));
                     toast.success('Perfil actualizado');
                   } catch { toast.error('Error al guardar'); }
                 }} className="btn-primary text-sm px-6" style={{ backgroundColor: primaryColor }}>
