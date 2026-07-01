@@ -20,6 +20,7 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [showCreate, setShowCreate] = useState(false);
+  const [editUser, setEditUser] = useState(null);
   const [showMem, setShowMem] = useState(null); // user
   const [memTypes, setMemTypes] = useState([]);
   const [form, setForm] = useState(EMPTY_USER);
@@ -45,18 +46,29 @@ export default function AdminUsersPage() {
   }, []);
 
   const handleCreate = async () => {
-    if (!form.cedula || !form.name || !form.password) return toast.error('Cédula, nombre y contraseña son requeridos');
-    if (form.password !== form.confirmPassword) return toast.error('Las contraseñas no coinciden');
-    setSaving(true);
-    try {
+  if (!form.cedula || !form.name) return toast.error('Cédula y nombre son requeridos');
+  if (!editUser && !form.password) return toast.error('Contraseña es requerida');
+  if (form.password && form.password !== form.confirmPassword) return toast.error('Las contraseñas no coinciden');
+  setSaving(true);
+  try {
+    if (editUser) {
+      await adminAPI.updateUser(editUser.id, {
+        name: form.name, email: form.email, phone: form.phone,
+        birthDate: form.birthDate, emergencyContactName: form.emergencyContactName,
+        emergencyContactPhone: form.emergencyContactPhone
+      });
+      toast.success('Usuario actualizado exitosamente');
+    } else {
       await adminAPI.createUser(form);
       toast.success('Usuario creado exitosamente');
-      setShowCreate(false);
-      setForm(EMPTY_USER);
-      load();
-    } catch (err) { toast.error(err.response?.data?.error || 'Error al crear usuario'); }
-    finally { setSaving(false); }
-  };
+    }
+    setShowCreate(false);
+    setEditUser(null);
+    setForm(EMPTY_USER);
+    load();
+  } catch (err) { toast.error(err.response?.data?.error || 'Error al guardar usuario'); }
+  finally { setSaving(false); }
+};
 
   const handleActivateMem = async () => {
     if (!memForm.membershipTypeId) return toast.error('Selecciona un tipo de membresía');
@@ -86,6 +98,15 @@ export default function AdminUsersPage() {
   const membershipBadge = (status) => {
     if (status === 'active') return <span className="badge-active">Activo</span>;
     return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400">Sin membresía</span>;
+  };
+ 
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm('¿Eliminar este usuario?')) return;
+    try {
+      await adminAPI.updateUser(userId, { isActive: false });
+      toast.success('Usuario desactivado');
+      load();
+    } catch { toast.error('Error al eliminar usuario'); }
   };
 
   return (
@@ -146,7 +167,8 @@ export default function AdminUsersPage() {
                         className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all">
                         <Eye size={14} />
                       </button>
-                      <button title="Editar"
+                      <button onClick={() => { setForm({ cedula: u.cedula, name: u.name, email: u.email || '', phone: u.phone || '', birthDate: u.birth_date || '', emergencyContactName: u.emergency_contact_name || '', emergencyContactPhone: u.emergency_contact_phone || '', password: '', confirmPassword: '', role: 'user' }); setEditUser(u); setShowCreate(true); }}
+                        title="Editar"
                         className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all">
                         <Edit2 size={14} />
                       </button>
@@ -155,9 +177,13 @@ export default function AdminUsersPage() {
                         className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all">
                         <CreditCard size={14} />
                       </button>
-                      <button title="Resetear contraseña"
+                     <button title="Resetear contraseña"
                         className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all">
                         <Key size={14} />
+                      </button>
+                      <button onClick={() => handleDeleteUser(u.id)} title="Eliminar usuario"
+                        className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-red-500/20 hover:text-red-400 transition-all">
+                        <Trash2 size={14} />
                       </button>
                     </div>
                   </td>
@@ -182,7 +208,7 @@ export default function AdminUsersPage() {
       )}
 
       {/* Modal Crear Usuario */}
-      <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Nuevo Usuario" maxWidth="max-w-lg">
+        <Modal open={showCreate} onClose={() => { setShowCreate(false); setEditUser(null); setForm(EMPTY_USER); }} title={editUser ? 'Editar Usuario' : 'Nuevo Usuario'} maxWidth="max-w-lg">
         <div className="flex flex-col gap-4">
           <p className="text-xs font-bold opacity-50 uppercase tracking-wider">Información Básica</p>
           <div className="grid grid-cols-2 gap-3">
@@ -205,15 +231,6 @@ export default function AdminUsersPage() {
             <Field label="Fecha de Nacimiento">
               <input className="input-field" type="date" value={form.birthDate}
                 onChange={e => setForm({ ...form, birthDate: e.target.value })} />
-            </Field>
-            <Field label="Rol">
-              <select className="input-field" value={form.role}
-                onChange={e => setForm({ ...form, role: e.target.value })}>
-                <option value="user">Usuario</option>
-                <option value="recepcionista">Recepcionista</option>
-                <option value="instructor">Instructor</option>
-                <option value="admin">Admin</option>
-              </select>
             </Field>
           </div>
 
@@ -247,7 +264,7 @@ export default function AdminUsersPage() {
               className="btn-primary flex-1 text-sm flex items-center justify-center gap-2"
               style={{ backgroundColor: primaryColor }}>
               {saving && <Spinner size={14} className="text-white" />}
-              <CreditCard size={14} /> Crear Usuario
+              {editUser ? 'Guardar Cambios' : 'Crear Usuario'}
             </button>
           </div>
         </div>
