@@ -552,7 +552,7 @@ export function ReceptionScannerPage() {
       <div className="w-full rounded-xl p-5 mb-4" style={{ background: '#1a1a1a' }}>
         <p className="font-semibold mb-3">Escanear Código QR</p>
         <QRScanner
-          onScan={(code) => { setCode(code); validate(); }}
+          onScan={(scannedCode) => { setCode(scannedCode); validate(scannedCode); }}
           onError={(err) => console.error('QR error:', err)}
         />
       </div>
