@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { UserHomePage, UserSchedulePage, UserQRPage, UserProfilePage, UserEditProfilePage, UserBookingsPage, UserPaymentHistoryPage, UserNotificationsPage, UserWodPage } from './pages/user/UserPages';
 
 // Layouts
 import SuperAdminLayout from './components/layout/SuperAdminLayout';
@@ -126,7 +127,7 @@ function AppRoutes() {
         <Route path="bookings" element={<UserBookingsPage />} />
         <Route path="payment-history" element={<UserPaymentHistoryPage />} />
         <Route path="notifications" element={<UserNotificationsPage />} />
-        <Route path="wod" element={<Placeholder label="WOD de Hoy" />} />
+        <Route path="wod" element={<UserWodPage />} />
         <Route path="training" element={<Placeholder label="Mi Entrenamiento" />} />
         <Route path="payphone" element={<UserPayphonePage />} />
         <Route path="payment-result" element={<UserPaymentResultPage />} />

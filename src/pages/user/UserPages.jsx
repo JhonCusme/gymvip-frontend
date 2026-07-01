@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { userAPI } from '../../api';
+import { userAPI, wodAPI } from '../../api';
 import { Spinner, Modal, Field } from '../../components/ui';
 import { Home, Calendar, QrCode, User, ChevronRight, Dumbbell, Clock, CreditCard, Bell, Lock, HelpCircle, LogOut, ArrowLeft, X, Check } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -618,6 +618,90 @@ export function UserNotificationsPage() {
             </div>
           ))
       }
+    </UserLayout>
+  );
+}
+
+// ============================================================
+// WOD DEL DÍA — USUARIO
+// ============================================================
+export function UserWodPage() {
+  const { gym } = useAuth();
+  const primaryColor = gym?.primaryColor || '#E85D04';
+  const [wod, setWod] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    wodAPI.getUserWod()
+      .then(r => setWod(r.data))
+      .catch(() => toast.error('Error al cargar WOD'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const today = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  return (
+    <UserLayout title="WOD de Hoy" showBack>
+      {loading ? (
+        <div className="flex justify-center py-20"><Spinner size={24} className="opacity-30" /></div>
+      ) : !wod ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="text-6xl mb-4">💪</div>
+          <p className="font-bold text-lg opacity-50">Sin WOD programado</p>
+          <p className="text-sm opacity-30 mt-1">No hay entrenamiento programado para hoy.</p>
+          <p className="text-xs opacity-20 mt-1 capitalize">{today}</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4">
+          {/* Header */}
+          <div className="rounded-2xl p-5 relative overflow-hidden" style={{ background: '#1a1a1a' }}>
+            <div className="absolute right-4 top-4 text-6xl opacity-5">💪</div>
+            <p className="text-xs font-bold uppercase tracking-widest mb-1 capitalize" style={{ color: primaryColor }}>{today}</p>
+            <h2 className="text-2xl font-black">{wod.title || 'WOD del Día'}</h2>
+            {wod.description && <p className="text-sm opacity-60 mt-2">{wod.description}</p>}
+          </div>
+
+          {/* Calentamiento */}
+          {wod.warmup && (
+            <div className="rounded-2xl p-4" style={{ background: '#1a1a1a' }}>
+              <p className="text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
+                🔥 <span style={{ color: primaryColor }}>Calentamiento</span>
+              </p>
+              <p className="text-sm opacity-80 whitespace-pre-wrap leading-relaxed">{wod.warmup}</p>
+            </div>
+          )}
+
+          {/* Workout */}
+          {wod.workout && (
+            <div className="rounded-2xl p-4 border" style={{ background: '#1a1a1a', borderColor: `${primaryColor}40` }}>
+              <p className="text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
+                ⚡ <span style={{ color: primaryColor }}>Workout</span>
+              </p>
+              <p className="text-sm opacity-80 whitespace-pre-wrap leading-relaxed font-mono">{wod.workout}</p>
+            </div>
+          )}
+
+          {/* Enfriamiento */}
+          {wod.cooldown && (
+            <div className="rounded-2xl p-4" style={{ background: '#1a1a1a' }}>
+              <p className="text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
+                ❄️ <span style={{ color: primaryColor }}>Enfriamiento</span>
+              </p>
+              <p className="text-sm opacity-80 whitespace-pre-wrap leading-relaxed">{wod.cooldown}</p>
+            </div>
+          )}
+
+          {/* Notas del coach */}
+          {wod.notes && (
+            <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <p className="text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
+                📝 <span className="opacity-50">Notas del Coach</span>
+              </p>
+              <p className="text-sm opacity-60 whitespace-pre-wrap leading-relaxed">{wod.notes}</p>
+            </div>
+          )}
+        </div>
+      )}
     </UserLayout>
   );
 }
