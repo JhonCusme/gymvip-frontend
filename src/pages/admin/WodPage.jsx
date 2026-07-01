@@ -182,11 +182,6 @@ export default function WodPage() {
               <p className="font-bold">
                 {new Date(selectedDate + 'T00:00:00').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
               </p>
-              {selectedWod && (
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${difficultyColors[selectedWod.difficulty]}`}>
-                  {selectedWod.difficulty?.toUpperCase()}
-                </span>
-              )}
             </div>
             <div className="flex gap-2">
               {selectedWod && !editing && (
@@ -255,15 +250,6 @@ export default function WodPage() {
                 <p className="text-xs opacity-50 mb-1">Título (opcional)</p>
                 <input className="input-field" placeholder="Ej: Cindy, Fran, Amanda..." value={form.title}
                   onChange={e => setForm({ ...form, title: e.target.value })} />
-              </div>
-              <div>
-                <p className="text-xs opacity-50 mb-1">Dificultad</p>
-                <select className="input-field" value={form.difficulty}
-                  onChange={e => setForm({ ...form, difficulty: e.target.value })}>
-                  <option value="scaled">Scaled</option>
-                  <option value="rx">RX</option>
-                  <option value="rx_plus">RX+</option>
-                </select>
               </div>
               <div>
                 <p className="text-xs opacity-50 mb-1">Descripción general</p>
