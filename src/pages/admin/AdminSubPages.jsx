@@ -241,6 +241,7 @@ export function AdminInstructorsPage() {
   const [instructors, setInstructors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [editInstructor, setEditInstructor] = useState(null);
   const [form, setForm] = useState(EMPTY_INSTR);
   const [saving, setSaving] = useState(false);
 
@@ -253,12 +254,21 @@ export function AdminInstructorsPage() {
 
   useEffect(() => { load(); }, []);
 
-  const save = async () => {
+ const save = async () => {
     if (!form.name) return toast.error('Nombre requerido');
     setSaving(true);
     try {
-      await adminAPI.createInstructor(form);
-      toast.success('Instructor creado'); setShowModal(false); load();
+      if (editInstructor) {
+        await adminAPI.updateInstructor(editInstructor.id, form);
+        toast.success('Instructor actualizado');
+      } else {
+        await adminAPI.createInstructor(form);
+        toast.success('Instructor creado');
+      }
+      setShowModal(false);
+      setEditInstructor(null);
+      setForm(EMPTY_INSTR);
+      load();
     } catch (err) { toast.error(err.response?.data?.error || 'Error al guardar'); }
     finally { setSaving(false); }
   };
@@ -270,6 +280,16 @@ export function AdminInstructorsPage() {
       toast.success('Instructor desactivado');
       load();
     } catch { toast.error('Error al desactivar'); }
+  };
+  
+  const handleToggleInstructor = async (instructor) => {
+    const accion = instructor.is_active ? 'desactivar' : 'activar';
+    if (!window.confirm(`¿${accion} este instructor?`)) return;
+    try {
+      await adminAPI.updateInstructor(instructor.id, { isActive: !instructor.is_active });
+      toast.success(`Instructor ${instructor.is_active ? 'desactivado' : 'activado'}`);
+      load();
+    } catch { toast.error('Error al actualizar instructor'); }
   };
 
   return (
@@ -297,8 +317,17 @@ export function AdminInstructorsPage() {
                   <span className={i.is_active ? 'badge-active' : 'badge-inactive'}>
                     {i.is_active ? 'Activo' : 'Inactivo'}
                   </span>
-                  <button onClick={() => handleDeleteInstructor(i.id)}
-                    className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-red-500/20 hover:text-red-400 transition-all">
+                  <button onClick={() => {
+                      setEditInstructor(i);
+                      setForm({ name: i.name, photoUrl: i.photo_url || '', specialization: i.specialization || '', phone: i.phone || '', cedula: '', password: '', bio: i.bio || '', isActive: i.is_active });
+                      setShowModal(true);
+                    }}
+                    className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all">
+                    <Edit2 size={13} />
+                  </button>
+                  <button onClick={() => handleToggleInstructor(i)}
+                    title={i.is_active ? 'Desactivar' : 'Activar'}
+                    className={`p-1.5 rounded-lg opacity-40 hover:opacity-100 transition-all ${i.is_active ? 'hover:bg-red-500/20 hover:text-red-400' : 'hover:bg-green-500/20 hover:text-green-400'}`}>
                     <Trash2 size={13} />
                   </button>
                 </div>
@@ -307,7 +336,7 @@ export function AdminInstructorsPage() {
           </div>
         )}
 
-      <Modal open={showModal} onClose={() => setShowModal(false)} title="Nuevo Instructor" maxWidth="max-w-lg">
+      <Modal open={showModal} onClose={() => { setShowModal(false); setEditInstructor(null); setForm(EMPTY_INSTR); }} title={editInstructor ? 'Editar Instructor' : 'Nuevo Instructor'} maxWidth="max-w-lg">
         <div className="flex flex-col gap-4">
           <div className="flex justify-center">
             <label className="cursor-pointer">
@@ -347,7 +376,7 @@ export function AdminInstructorsPage() {
           <div className="flex gap-3">
             <button onClick={() => setShowModal(false)} className="btn-secondary flex-1 text-sm">Cancelar</button>
             <button onClick={save} disabled={saving} className="btn-primary flex-1 text-sm flex items-center justify-center gap-2" style={{ backgroundColor: primaryColor }}>
-              {saving && <Spinner size={14} className="text-white" />}Crear
+              {saving && <Spinner size={14} className="text-white" />}{editInstructor ? 'Guardar' : 'Crear'}
             </button>
           </div>
         </div>
