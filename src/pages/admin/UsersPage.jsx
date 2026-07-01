@@ -167,11 +167,25 @@ export default function AdminUsersPage() {
                         className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all">
                         <Eye size={14} />
                       </button>
-                      <button onClick={() => { setForm({ cedula: u.cedula, name: u.name, email: u.email || '', phone: u.phone || '', birthDate: u.birth_date || '', emergencyContactName: u.emergency_contact_name || '', emergencyContactPhone: u.emergency_contact_phone || '', password: '', confirmPassword: '', role: 'user' }); setEditUser(u); setShowCreate(true); }}
-                        title="Editar"
-                        className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all">
-                        <Edit2 size={14} />
-                      </button>
+                      <button onClick={async () => {
+    try {
+      const res = await adminAPI.getUser(u.id);
+      const usr = res.data.user;
+      setForm({ 
+        cedula: usr.cedula, name: usr.name, email: usr.email || '', 
+        phone: usr.phone || '', birthDate: usr.birth_date || '', 
+        emergencyContactName: usr.emergency_contact_name || '', 
+        emergencyContactPhone: usr.emergency_contact_phone || '', 
+        password: '', confirmPassword: '', role: 'user' 
+      });
+      setEditUser(usr);
+      setShowCreate(true);
+    } catch { toast.error('Error al cargar usuario'); }
+  }}
+  title="Editar"
+  className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all">
+  <Edit2 size={14} />
+</button>
                       <button onClick={() => { setShowMem(u); setMemForm(EMPTY_MEM); }}
                         title="Activar membresía"
                         className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all">
