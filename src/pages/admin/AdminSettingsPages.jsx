@@ -133,7 +133,7 @@ export function AdminMembershipsPage() {
 // CONFIGURACIÓN DEL ADMIN
 // ============================================================
 export function AdminSettingsPage() {
-  const { user, gym } = useAuth();
+ const { user, gym, updateUser } = useAuth();
   const primaryColor = gym?.primaryColor || '#E85D04';
   const [tab, setTab] = useState('perfil');
   const [form, setForm] = useState({ name: user?.name || '', email: user?.email || '', phone: user?.phone || '' });
@@ -209,12 +209,7 @@ export function AdminSettingsPage() {
                 <button onClick={async () => {
                   try {
                     await api.put('/admin/profile', { name: form.name, email: form.email, phone: form.phone });
-                    // Actualizar localStorage
-                    const savedUser = JSON.parse(localStorage.getItem('gymvip_user') || '{}');
-                    savedUser.name = form.name;
-                    savedUser.email = form.email;
-                    savedUser.phone = form.phone;
-                    localStorage.setItem('gymvip_user', JSON.stringify(savedUser));
+                    updateUser({ name: form.name, email: form.email, phone: form.phone });
                     toast.success('Perfil actualizado');
                   } catch { toast.error('Error al guardar'); }
                 }} className="btn-primary text-sm px-6" style={{ backgroundColor: primaryColor }}>

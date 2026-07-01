@@ -85,11 +85,16 @@ const logout = () => {
   const isReceptionist = role === 'recepcionista';
   const isInstructor = role === 'instructor';
   const isUser = role === 'user';
+  const updateUser = (newData) => {
+    const updatedUser = { ...user, ...newData };
+    setUser(updatedUser);
+    localStorage.setItem('gymvip_user', JSON.stringify(updatedUser));
+  };
 
-  return (
+ return (
     <AuthContext.Provider value={{
       user, gym, role, loading,
-      login, logout, applyGymTheme,
+      login, logout, applyGymTheme, updateUser,
       isSuperAdmin, isAdmin, isReceptionist, isInstructor, isUser
     }}>
       {children}
