@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { adminAPI } from '../../api';
+import { adminAPI, uploadAPI } from '../../api';
 import { PageHeader, Modal, Field, Spinner, EmptyState, ConfirmDialog } from '../../components/ui';
 import { Plus, Edit2, Trash2, Clock, Users, Key } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -310,10 +310,30 @@ export function AdminInstructorsPage() {
       <Modal open={showModal} onClose={() => setShowModal(false)} title="Nuevo Instructor" maxWidth="max-w-lg">
         <div className="flex flex-col gap-4">
           <div className="flex justify-center">
-            <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-3xl opacity-30 cursor-pointer hover:opacity-60 transition-opacity">
-              {form.photoUrl ? <img src={form.photoUrl} alt="" className="w-full h-full object-cover rounded-full" /> : '👤'}
-            </div>
+            <label className="cursor-pointer">
+              <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-3xl hover:opacity-60 transition-opacity overflow-hidden relative">
+                {form.photoUrl
+                  ? <img src={form.photoUrl} alt="" className="w-full h-full object-cover" />
+                  : <span className="opacity-30">👤</span>
+                }
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity rounded-full">
+                  <span className="text-xs text-white">📁</span>
+                </div>
+              </div>
+              <input type="file" accept="image/*" className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files[0];
+                  if (!file) return;
+                  if (file.size > 2 * 1024 * 1024) return toast.error('La imagen no puede superar 2MB');
+                  try {
+                    const res = await uploadAPI.uploadInstructorPhoto(file);
+                    setForm({ ...form, photoUrl: res.data.url });
+                    toast.success('Foto subida exitosamente');
+                  } catch { toast.error('Error al subir la foto'); }
+                }} />
+            </label>
           </div>
+          <p className="text-center text-xs opacity-30">Clic para subir foto</p>
           <Field label="Nombre" required><input className="input-field" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></Field>
           <Field label="Especialización"><input className="input-field" placeholder="Ej: CrossFit Level 2, Olympic Lifting" value={form.specialization} onChange={e => setForm({ ...form, specialization: e.target.value })} /></Field>
           <Field label="Teléfono"><input className="input-field" placeholder="Ej: 0991234567" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} /></Field>
