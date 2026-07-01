@@ -398,6 +398,8 @@ export function AdminReceptionistsPage() {
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState(EMPTY_RECEP);
   const [saving, setSaving] = useState(false);
+  const [showResetPass, setShowResetPass] = useState(null);
+  const [newPassword, setNewPassword] = useState('');
 
   const load = async () => {
     setLoading(true);
@@ -427,6 +429,16 @@ export function AdminReceptionistsPage() {
     } catch { toast.error('Error al desactivar'); }
   };
 
+  const handleResetPassReceptionist = async () => {
+    if (!newPassword || newPassword.length < 6) return toast.error('Mínimo 6 caracteres');
+    try {
+      await adminAPI.resetPassword(showResetPass.id, { newPassword });
+      toast.success('Contraseña reseteada exitosamente');
+      setShowResetPass(null);
+      setNewPassword('');
+    } catch { toast.error('Error al resetear contraseña'); }
+  };
+
   return (
     <div className="fade-in">
       <PageHeader title="Recepcionistas"
@@ -452,6 +464,9 @@ export function AdminReceptionistsPage() {
                     <td className="text-xs opacity-60">{r.phone || '—'}</td>
                     <td><span className={r.is_active ? 'badge-active' : 'badge-inactive'}>{r.is_active ? 'Activo' : 'Inactivo'}</span></td>
                     <td><div className="flex gap-1">
+                      <button onClick={() => { setShowResetPass(r); setNewPassword(''); }}
+                        title="Resetear contraseña"
+                        className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all"><Key size={13} /></button>
                       <button onClick={() => handleDelete(r.id)} title="Desactivar recepcionista"
                         className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-red-500/20 hover:text-red-400 transition-all"><Trash2 size={13} /></button>
                     </div></td>
@@ -476,6 +491,30 @@ export function AdminReceptionistsPage() {
             </button>
           </div>
         </div>
+      </Modal>
+
+      <Modal open={!!showResetPass} onClose={() => setShowResetPass(null)} title="Resetear Contraseña">
+        {showResetPass && (
+          <div className="flex flex-col gap-4">
+            <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
+              <p className="text-xs opacity-50">Recepcionista</p>
+              <p className="font-bold">{showResetPass.name}</p>
+              <p className="text-xs opacity-40">Cédula: {showResetPass.cedula}</p>
+            </div>
+            <Field label="Nueva Contraseña" required>
+              <input className="input-field" type="password" placeholder="Mínimo 6 caracteres"
+                value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+            </Field>
+            <div className="flex gap-3">
+              <button onClick={() => setShowResetPass(null)} className="btn-secondary flex-1 text-sm">Cancelar</button>
+              <button onClick={handleResetPassReceptionist}
+                className="btn-primary flex-1 text-sm"
+                style={{ backgroundColor: gym?.primaryColor || '#E85D04' }}>
+                Resetear Contraseña
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );
