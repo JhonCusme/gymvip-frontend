@@ -21,7 +21,9 @@ export default function AdminUsersPage() {
   const [page, setPage] = useState(1);
   const [showCreate, setShowCreate] = useState(false);
   const [editUser, setEditUser] = useState(null);
-  const [showMem, setShowMem] = useState(null); // user
+  const [showMem, setShowMem] = useState(null);
+const [showResetPass, setShowResetPass] = useState(null);
+const [newPassword, setNewPassword] = useState(''); 
   const [memTypes, setMemTypes] = useState([]);
   const [form, setForm] = useState(EMPTY_USER);
   const [memForm, setMemForm] = useState(EMPTY_MEM);
@@ -111,6 +113,16 @@ export default function AdminUsersPage() {
     } catch { toast.error('Error al actualizar usuario'); }
   };
 
+  const handleResetPassword = async () => {
+    if (!newPassword || newPassword.length < 6) return toast.error('Mínimo 6 caracteres');
+    try {
+      await adminAPI.resetPassword(showResetPass.id, { newPassword });
+      toast.success('Contraseña reseteada exitosamente');
+      setShowResetPass(null);
+      setNewPassword('');
+    } catch { toast.error('Error al resetear contraseña'); }
+  };
+  
   return (
     <div className="fade-in">
       <PageHeader
@@ -193,7 +205,8 @@ export default function AdminUsersPage() {
                         className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all">
                         <CreditCard size={14} />
                       </button>
-                     <button title="Resetear contraseña"
+                     <button onClick={() => { setShowResetPass(u); setNewPassword(''); }}
+                        title="Resetear contraseña"
                         className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all">
                         <Key size={14} />
                       </button>
