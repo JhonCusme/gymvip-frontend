@@ -32,10 +32,10 @@ export function UserPayphonePage() {
       navigate('/usuario/home');
       return;
     }
-    // Solo cargar info del plan inicialmente
-    api.get('/usuario/payphone/init', { params: { membershipTypeId: planId, recurring: false } })
+    // Solo cargar info del plan para mostrar opciones
+    api.get('/usuario/payphone/init', { params: { membershipTypeId: planId, infoOnly: true } })
       .then(r => setPaymentData(r.data))
-      .catch(err => setError(err.response?.data?.error || 'Error al iniciar pago'))
+      .catch(err => setError(err.response?.data?.error || 'Error al cargar plan'))
       .finally(() => setLoading(false));
   }, [planId]);
 
