@@ -404,7 +404,14 @@ const [newPassword, setNewPassword] = useState('');
           <Field label="Nombre" required><input className="input-field" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></Field>
           <Field label="Especialización"><input className="input-field" placeholder="Ej: CrossFit Level 2, Olympic Lifting" value={form.specialization} onChange={e => setForm({ ...form, specialization: e.target.value })} /></Field>
           <Field label="Teléfono"><input className="input-field" placeholder="Ej: 0991234567" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} /></Field>
-          <Field label="Cédula / Usuario (Acceso)"><input className="input-field" placeholder="Ej: 0999999999" value={form.cedula} onChange={e => setForm({ ...form, cedula: e.target.value })} /></Field>
+          <Field label="Cédula / Usuario (Acceso)">
+  <input className="input-field" placeholder="Ej: 0999999999" 
+    value={form.cedula} 
+    onChange={e => setForm({ ...form, cedula: e.target.value })}
+    disabled={!!editInstructor?.user_id}
+  />
+  {editInstructor?.user_id && <p className="text-xs opacity-40 mt-1">La cédula no se puede cambiar desde aquí</p>}
+</Field>
           <Field label="Contraseña de Acceso"><input className="input-field" type="password" placeholder="Contraseña de acceso" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} /></Field>
           <Field label="Biografía"><textarea className="input-field" rows={2} placeholder="Breve descripción del instructor..." value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })} /></Field>
           <label className="flex items-center gap-2 text-sm cursor-pointer">
