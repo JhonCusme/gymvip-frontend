@@ -44,8 +44,7 @@ export function UserPayphonePage() {
     scriptLoaded.current = false;
 
     // Primero obtener datos completos con token
-    api.get('/usuario/payphone/init', { params: { membershipTypeId: planId, recurring: wantsRecurring } })
-      .then(r => {
+api.get('/usuario/payphone/init', { params: { membershipTypeId: planId, recurring: wantsRecurring, t: Date.now() } })      .then(r => {
         const data = r.data;
         setPaymentData(prev => ({ ...prev, ...data }));
 
