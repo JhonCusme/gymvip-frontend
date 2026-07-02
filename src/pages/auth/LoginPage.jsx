@@ -74,15 +74,9 @@ const [multiRoleData, setMultiRoleData] = useState(null);
   const isSuperLogin = !gymSlug;
 
   const handleSelectRole = async (selectedRole) => {
+    setLoading(true);
     try {
-      // Hacer login de nuevo con el rol seleccionado
-      const res = await authAPI.loginWithRole({
-        cedula: form.cedula,
-        password: form.password,
-        gym: gymSlug,
-        role: selectedRole
-      });
-      await login(form.cedula, form.password, gymSlug, selectedRole);
+      const data = await login(form.cedula, form.password, gymSlug, selectedRole);
       const redirectMap = {
         admin: '/dashboard',
         recepcionista: '/recepcion',
@@ -92,6 +86,8 @@ const [multiRoleData, setMultiRoleData] = useState(null);
       navigate(redirectMap[selectedRole] || '/usuario/home');
     } catch (err) {
       setErrorMsg('Error al seleccionar rol');
+    } finally {
+      setLoading(false);
     }
   };
 
