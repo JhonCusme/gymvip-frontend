@@ -56,16 +56,14 @@ export function UserPayphonePage() {
 
   // Inyectar los scripts de PayPhone y renderizar la cajita
   useEffect(() => {
-    if (!paymentData || scriptLoaded.current) return;
-
+    if (!paymentData || scriptLoaded.current || step !== 'payment') return;
+    
     const loadScript = () => {
-      // 1. CSS de PayPhone
       const link = document.createElement('link');
       link.rel = 'stylesheet';
       link.href = 'https://cdn.payphonetodoesposible.com/box/v2.0/payphone-payment-box.css';
       document.head.appendChild(link);
 
-      // 2. JS de PayPhone
       const script = document.createElement('script');
       script.type = 'module';
       script.src = 'https://cdn.payphonetodoesposible.com/box/v2.0/payphone-payment-box.js';
@@ -77,13 +75,10 @@ export function UserPayphonePage() {
 
     const renderCajita = () => {
       if (!window.PPaymentButtonBox) {
-        // Intentar de nuevo si el SDK no cargó aún
         setTimeout(renderCajita, 500);
         return;
       }
-
       const appUrl = window.location.origin;
-
       try {
         new window.PPaymentButtonBox({
           token: paymentData.token,
@@ -95,7 +90,6 @@ export function UserPayphonePage() {
           reference: paymentData.reference,
           lang: paymentData.lang || 'es',
           timeZone: paymentData.timeZone || -5,
-          // Datos del cliente para pre-llenar
           ...(paymentData.phoneNumber && { phoneNumber: paymentData.phoneNumber }),
           ...(paymentData.email && { email: paymentData.email }),
           ...(paymentData.documentId && { documentId: paymentData.documentId }),
@@ -109,7 +103,7 @@ export function UserPayphonePage() {
     };
 
     loadScript();
-  }, [paymentData]);
+  }, [paymentData, step]);
 
   if (loading) return (
     <UserLayout title="Pagar con PayPhone" showBack>
