@@ -279,6 +279,7 @@ export function AdminSettingsPage() {
               <div className="flex flex-col gap-4">
                 <Field label="Store ID"><input className="input-field" placeholder="Tu Store ID de PayPhone" value={payphoneForm.storeId} onChange={e => setPayphoneForm({ ...payphoneForm, storeId: e.target.value })} /></Field>
                 <Field label="Token"><input className="input-field" type="password" placeholder="Tu Token de PayPhone" value={payphoneForm.token} onChange={e => setPayphoneForm({ ...payphoneForm, token: e.target.value })} /></Field>
+                <Field label="Clave de Codificación (Tokenización)"><input className="input-field" type="password" placeholder="Clave de codificación para cobro recurrente" value={payphoneForm.codingPassword || ''} onChange={e => setPayphoneForm({ ...payphoneForm, codingPassword: e.target.value })} /></Field>
                 <button onClick={handleSavePayphone} disabled={saving} className="btn-primary text-sm self-start px-6 flex items-center gap-2" style={{ backgroundColor: primaryColor }}>
                   {saving && <Spinner size={14} className="text-white" />} Guardar credenciales
                 </button>
