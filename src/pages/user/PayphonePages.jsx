@@ -41,14 +41,17 @@ export function UserPayphonePage() {
 
   // Cargar cajita cuando llega al paso de pago
   useEffect(() => {
-    if (step !== 'payment' || !paymentData) return;
+    if (step !== 'payment' || !paymentData || !planId) return;
     scriptLoaded.current = false;
-    // Recargar con el precio correcto según si quiere recurrente
     api.get('/usuario/payphone/init', { params: { membershipTypeId: planId, recurring: wantsRecurring } })
       .then(r => {
-        setPaymentData(r.data);
+        setPaymentData(prev => ({ ...prev, ...r.data }));
       })
-      .catch(() => {});
+      .catch(err => {
+        console.error('Error iniciando pago:', err);
+        toast.error('Error al iniciar el pago. Intenta de nuevo.');
+        setStep('choice');
+      });
   }, [step]);
 
   // Inyectar los scripts de PayPhone y renderizar la cajita
