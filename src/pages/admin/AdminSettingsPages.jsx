@@ -141,6 +141,17 @@ export function AdminSettingsPage() {
   const [payphoneForm, setPayphoneForm] = useState({ storeId: '', token: '' });
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    api.get('/admin/settings/payphone')
+      .then(r => {
+        if (r.data) setPayphoneForm({ 
+          storeId: r.data.storeId || '', 
+          token: r.data.token || '' 
+        });
+      })
+      .catch(() => {});
+  }, []);
+
   const handleChangePassword = async () => {
     if (!passForm.currentPassword || !passForm.newPassword) return toast.error('Completa todos los campos');
     if (passForm.newPassword !== passForm.confirmPassword) return toast.error('Las contraseñas no coinciden');
