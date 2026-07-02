@@ -20,20 +20,36 @@ export function UserPayphonePage() {
   const [paymentData, setPaymentData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [step, setStep] = useState('choice'); // choice | consent | payment
+  const [wantsRecurring, setWantsRecurring] = useState(false);
+  const [consentSigned, setConsentSigned] = useState(false);
+  const [signingConsent, setSigningConsent] = useState(false);
   const cajitaRef = useRef(null);
   const scriptLoaded = useRef(false);
 
-  useEffect(() => {
+ useEffect(() => {
     if (!planId) {
       navigate('/usuario/home');
       return;
     }
-    // Obtener parámetros de init desde el backend
-    api.get('/usuario/payphone/init', { params: { membershipTypeId: planId } })
+    // Solo cargar info del plan inicialmente
+    api.get('/usuario/payphone/init', { params: { membershipTypeId: planId, recurring: false } })
       .then(r => setPaymentData(r.data))
       .catch(err => setError(err.response?.data?.error || 'Error al iniciar pago'))
       .finally(() => setLoading(false));
   }, [planId]);
+
+  // Cargar cajita cuando llega al paso de pago
+  useEffect(() => {
+    if (step !== 'payment' || !paymentData) return;
+    scriptLoaded.current = false;
+    // Recargar con el precio correcto según si quiere recurrente
+    api.get('/usuario/payphone/init', { params: { membershipTypeId: planId, recurring: wantsRecurring } })
+      .then(r => {
+        setPaymentData(r.data);
+      })
+      .catch(() => {});
+  }, [step]);
 
   // Inyectar los scripts de PayPhone y renderizar la cajita
   useEffect(() => {
@@ -119,29 +135,106 @@ export function UserPayphonePage() {
           <p className="text-xs opacity-50">
             Duración: {paymentData.plan.durationValue} {paymentData.plan.durationUnit === 'months' ? 'mes(es)' : paymentData.plan.durationUnit}
           </p>
-          <p className="text-2xl font-black mt-2" style={{ color: primaryColor }}>
-            ${parseFloat(paymentData.plan.price).toFixed(2)} USD
-          </p>
+          <div className="flex items-center gap-3 mt-2">
+            <p className={`text-2xl font-black ${wantsRecurring && paymentData.plan.recurringDiscount > 0 ? 'line-through opacity-40 text-lg' : ''}`} style={{ color: primaryColor }}>
+              ${parseFloat(paymentData.plan.price).toFixed(2)} USD
+            </p>
+            {wantsRecurring && paymentData.plan.recurringDiscount > 0 && (
+              <div>
+                <p className="text-2xl font-black text-green-400">
+                  ${(parseFloat(paymentData.plan.price) * (1 - paymentData.plan.recurringDiscount / 100)).toFixed(2)} USD
+                </p>
+                <p className="text-xs text-green-400">{paymentData.plan.recurringDiscount}% descuento recurrente</p>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
-      {/* Cajita de PayPhone — se renderiza aquí */}
-      <div
-        id="pp-button"
-        ref={cajitaRef}
-        className="min-h-64 rounded-2xl overflow-hidden"
-        style={{ background: 'transparent' }}
-      >
-        {/* El SDK de PayPhone inyecta el formulario aquí */}
-        <div className="flex items-center justify-center h-48 opacity-20">
-          <Spinner size={24} />
-          <span className="ml-2 text-sm">Cargando formulario de pago...</span>
+      {/* PASO 1 — Elegir si quiere cobro recurrente */}
+      {step === 'choice' && (
+        <div className="flex flex-col gap-4">
+          {paymentData?.plan?.recurringDiscount > 0 && (
+            <div className="rounded-2xl p-5 border-2" style={{ background: 'rgba(22,163,74,0.08)', borderColor: '#16a34a' }}>
+              <p className="font-black text-lg text-green-400 mb-1">🎉 Ahorra {paymentData.plan.recurringDiscount}% activando el cobro automático</p>
+              <p className="text-sm opacity-70 mb-3">
+                Activa la renovación automática y paga ${(parseFloat(paymentData?.plan?.price || 0) * (1 - (paymentData?.plan?.recurringDiscount || 0) / 100)).toFixed(2)} en lugar de ${parseFloat(paymentData?.plan?.price || 0).toFixed(2)} cada vez.
+              </p>
+              <button onClick={() => { setWantsRecurring(true); setStep('consent'); }}
+                className="w-full py-3 rounded-xl font-bold text-white mb-2"
+                style={{ backgroundColor: '#16a34a' }}>
+                ✅ Activar cobro automático con descuento
+              </button>
+              <button onClick={() => { setWantsRecurring(false); setStep('payment'); }}
+                className="w-full py-3 rounded-xl font-semibold text-sm opacity-60 border border-white/20">
+                Pagar sin descuento (${parseFloat(paymentData?.plan?.price || 0).toFixed(2)})
+              </button>
+            </div>
+          )}
+          {(!paymentData?.plan?.recurringDiscount || paymentData?.plan?.recurringDiscount <= 0) && (
+            <div className="flex flex-col gap-3">
+              <button onClick={() => { setWantsRecurring(true); setStep('consent'); }}
+                className="w-full py-3 rounded-xl font-bold text-white"
+                style={{ backgroundColor: primaryColor }}>
+                Activar cobro automático
+              </button>
+              <button onClick={() => { setWantsRecurring(false); setStep('payment'); }}
+                className="w-full py-3 rounded-xl font-semibold text-sm opacity-60 border border-white/20">
+                Pagar una sola vez
+              </button>
+            </div>
+          )}
         </div>
-      </div>
+      )}
 
-      <p className="text-xs opacity-30 text-center mt-4">
-        Pago seguro procesado por PayPhone · PCI DSS 4.0 · 3D Secure
-      </p>
+      {/* PASO 2 — Firmar consentimiento */}
+      {step === 'consent' && (
+        <div className="flex flex-col gap-4">
+          <div className="rounded-2xl p-4 border" style={{ background: '#1a1a1a', borderColor: 'rgba(255,255,255,0.06)' }}>
+            <p className="font-bold mb-2">Contrato de Autorización</p>
+            <div className="rounded-xl p-3 max-h-48 overflow-y-auto text-xs opacity-60 leading-relaxed mb-3"
+              style={{ background: 'rgba(255,255,255,0.04)' }}>
+              Por medio del presente instrumento, autorizo expresamente a {gym?.name} a almacenar de forma segura el token de mi tarjeta y realizar cobros automáticos por el valor de mi membresía vigente al momento de cada renovación. Esta autorización puede ser revocada en cualquier momento desde mi perfil.
+            </div>
+            <label className="flex items-start gap-3 cursor-pointer mb-4">
+              <input type="checkbox" checked={consentSigned} onChange={e => setConsentSigned(e.target.checked)} className="mt-0.5 w-4 h-4 flex-shrink-0" />
+              <span className="text-xs opacity-60">He leído y acepto los términos del contrato de autorización de débito automático</span>
+            </label>
+            <button onClick={async () => {
+              if (!consentSigned) return toast.error('Debes aceptar el contrato');
+              setSigningConsent(true);
+              try {
+                await api.post('/usuario/payphone/consent');
+                setStep('payment');
+              } catch { toast.error('Error al firmar consentimiento'); }
+              finally { setSigningConsent(false); }
+            }} disabled={!consentSigned || signingConsent}
+              className="w-full py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2"
+              style={{ backgroundColor: '#16a34a' }}>
+              {signingConsent && <Spinner size={16} className="text-white" />}
+              ✍ Firmar y continuar al pago
+            </button>
+            <button onClick={() => setStep('choice')} className="w-full py-2 mt-2 text-sm opacity-40">
+              ← Volver
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* PASO 3 — Cajita de PayPhone */}
+      {step === 'payment' && (
+        <div>
+          <div id="pp-button" ref={cajitaRef} className="min-h-64 rounded-2xl overflow-hidden" style={{ background: 'transparent' }}>
+            <div className="flex items-center justify-center h-48 opacity-20">
+              <Spinner size={24} />
+              <span className="ml-2 text-sm">Cargando formulario de pago...</span>
+            </div>
+          </div>
+          <p className="text-xs opacity-30 text-center mt-4">
+            Pago seguro procesado por PayPhone · PCI DSS 4.0 · 3D Secure
+          </p>
+        </div>
+      )}
     </UserLayout>
   );
 }
