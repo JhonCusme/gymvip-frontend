@@ -251,6 +251,7 @@ export function UserPaymentResultPage() {
 
     const id = searchParams.get('id');
     const clientTransactionId = searchParams.get('clientTransactionId');
+    const ctoken = searchParams.get('ctoken');
 
     if (!id || !clientTransactionId) {
       setStatus('error');
@@ -259,7 +260,7 @@ export function UserPaymentResultPage() {
     }
 
     // Confirmar el pago con el backend (dentro de los 5 minutos)
-    api.post('/usuario/payphone/confirm', { id, clientTransactionId })
+    api.post('/usuario/payphone/confirm', { id, clientTransactionId, ctoken })
       .then(r => {
         if (r.data.success) {
           setStatus('success');
