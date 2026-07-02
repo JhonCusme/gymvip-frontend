@@ -45,6 +45,7 @@ export function UserPayphonePage() {
     scriptLoaded.current = false;
     api.get('/usuario/payphone/init', { params: { membershipTypeId: planId, recurring: wantsRecurring } })
       .then(r => {
+        console.log('Datos init payment:', JSON.stringify(r.data).substring(0, 100));
         setPaymentData(prev => ({ ...prev, ...r.data }));
       })
       .catch(err => {
