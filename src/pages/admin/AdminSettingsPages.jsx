@@ -16,7 +16,7 @@ export function AdminMembershipsPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editType, setEditType] = useState(null);
-  const [form, setForm] = useState({ name: '', description: '', durationValue: 1, durationUnit: 'months', price: 0, sessionsPerWeek: '', isActive: true, isPublic: true });
+const [form, setForm] = useState({ name: '', description: '', durationValue: 1, durationUnit: 'months', price: 0, sessionsPerWeek: '', isActive: true, isPublic: true, recurringDiscount: 0 });
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
@@ -37,7 +37,8 @@ export function AdminMembershipsPage() {
         durationValue: parseInt(form.durationValue) || 1,
         price: parseFloat(form.price) || 0,
         sessionsPerWeek: form.sessionsPerWeek ? parseInt(form.sessionsPerWeek) : null,
-        isPublic: form.isPublic !== false
+        isPublic: form.isPublic !== false,
+        recurringDiscount: parseFloat(form.recurringDiscount) || 0
       };
       if (editType) await adminAPI.updateMembershipType(editType.id, data);
       else await adminAPI.createMembershipType(data);
@@ -56,7 +57,7 @@ export function AdminMembershipsPage() {
 
   const openEdit = (type) => {
     setEditType(type);
-    setForm({ name: type.name, description: type.description || '', durationValue: type.duration_value, durationUnit: type.duration_unit, price: type.price, sessionsPerWeek: type.sessions_per_week || '', isActive: type.is_active, isPublic: type.is_public !== false });
+    setForm({ name: type.name, description: type.description || '', durationValue: type.duration_value, durationUnit: type.duration_unit, price: type.price, sessionsPerWeek: type.sessions_per_week || '', isActive: type.is_active, isPublic: type.is_public !== false, recurringDiscount: type.recurring_discount || 0 });
     setShowModal(true);
   };
 
@@ -113,6 +114,11 @@ export function AdminMembershipsPage() {
             </Field>
             <Field label="Precio ($)"><input className="input-field" type="number" min={0} step={0.01} value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} /></Field>
             <Field label="Sesiones/semana"><input className="input-field" type="number" min={0} value={form.sessionsPerWeek} onChange={e => setForm({ ...form, sessionsPerWeek: e.target.value })} /></Field>
+            <Field label="Descuento recurrente (%)">
+              <input className="input-field" type="number" min={0} max={100} step={0.1} 
+                placeholder="Ej: 10 = 10% descuento" value={form.recurringDiscount || 0}
+                onChange={e => setForm({ ...form, recurringDiscount: e.target.value })} />
+            </Field>
           </div>
           <div className="flex flex-col gap-2">
             <label className="flex items-center gap-2 text-sm cursor-pointer">
