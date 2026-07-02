@@ -16,7 +16,7 @@ export function AdminMembershipsPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editType, setEditType] = useState(null);
-  const [form, setForm] = useState({ name: '', description: '', durationValue: 1, durationUnit: 'months', price: 0, sessionsPerWeek: '', isActive: true });
+  const [form, setForm] = useState({ name: '', description: '', durationValue: 1, durationUnit: 'months', price: 0, sessionsPerWeek: '', isActive: true, isPublic: true });
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
@@ -36,7 +36,8 @@ export function AdminMembershipsPage() {
         ...form,
         durationValue: parseInt(form.durationValue) || 1,
         price: parseFloat(form.price) || 0,
-        sessionsPerWeek: form.sessionsPerWeek ? parseInt(form.sessionsPerWeek) : null
+        sessionsPerWeek: form.sessionsPerWeek ? parseInt(form.sessionsPerWeek) : null,
+        isPublic: form.isPublic !== false
       };
       if (editType) await adminAPI.updateMembershipType(editType.id, data);
       else await adminAPI.createMembershipType(data);
@@ -55,7 +56,7 @@ export function AdminMembershipsPage() {
 
   const openEdit = (type) => {
     setEditType(type);
-    setForm({ name: type.name, description: type.description || '', durationValue: type.duration_value, durationUnit: type.duration_unit, price: type.price, sessionsPerWeek: type.sessions_per_week || '', isActive: type.is_active });
+    setForm({ name: type.name, description: type.description || '', durationValue: type.duration_value, durationUnit: type.duration_unit, price: type.price, sessionsPerWeek: type.sessions_per_week || '', isActive: type.is_active, isPublic: type.is_public !== false });
     setShowModal(true);
   };
 
@@ -113,10 +114,16 @@ export function AdminMembershipsPage() {
             <Field label="Precio ($)"><input className="input-field" type="number" min={0} step={0.01} value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} /></Field>
             <Field label="Sesiones/semana"><input className="input-field" type="number" min={0} value={form.sessionsPerWeek} onChange={e => setForm({ ...form, sessionsPerWeek: e.target.value })} /></Field>
           </div>
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
-            <input type="checkbox" checked={form.isActive} onChange={e => setForm({ ...form, isActive: e.target.checked })} className="w-4 h-4" />
-            Activo
-          </label>
+          <div className="flex flex-col gap-2">
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" checked={form.isActive} onChange={e => setForm({ ...form, isActive: e.target.checked })} className="w-4 h-4" />
+              Activo
+            </label>
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" checked={form.isPublic !== false} onChange={e => setForm({ ...form, isPublic: e.target.checked })} className="w-4 h-4" />
+              Visible para usuarios (PayPhone)
+            </label>
+          </div>
           <div className="flex gap-3">
             <button onClick={() => { setShowModal(false); setEditType(null); }} className="btn-secondary flex-1 text-sm">Cancelar</button>
             <button onClick={handleSave} disabled={saving} className="btn-primary flex-1 text-sm flex items-center justify-center gap-2" style={{ backgroundColor: primaryColor }}>
