@@ -42,8 +42,12 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (cedula, password, gymSlug) => {
-    const res = await authAPI.login({ cedula, password, gym: gymSlug });
+  const login = async (cedula, password, gymSlug, selectedRole) => {
+    const res = await authAPI.login({ cedula, password, gym: gymSlug, role: selectedRole });
+    
+    // Si es multi-rol, devolver data sin guardar sesión
+    if (res.data.multiRole) return res.data;
+    
     const { token, user: u, gym: g } = res.data;
     const r = res.data.role || u?.role;
 

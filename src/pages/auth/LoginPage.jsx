@@ -16,6 +16,7 @@ export default function LoginPage() {
   const [form, setForm] = useState({ cedula: '', password: '' });
   const [loading, setLoading] = useState(false);
 const [errorMsg, setErrorMsg] = useState('');
+const [multiRoleData, setMultiRoleData] = useState(null);
 
   // Cargar info del gym si viene en la URL
   useEffect(() => {
@@ -40,22 +41,26 @@ const [errorMsg, setErrorMsg] = useState('');
     setLoading(true);
     try {
       const data = await login(form.cedula, form.password, gymSlug || undefined);
-const role = data.role || data.user?.role;
 
+      // Multi-rol — mostrar pantalla de selección
+      if (data.multiRole) {
+        setMultiRoleData(data);
+        return;
+      }
 
-     // Redirigir según rol
+      const role = data.role || data.user?.role;
 
-if (data.user.isSuperAdmin && !gymSlug) {
-  navigate('/super/gyms');
-} else if (role === 'admin') {
-  navigate('/dashboard');
-} else if (role === 'recepcionista') {
-  navigate('/recepcion');
-} else if (role === 'instructor') {
-  navigate('/instructor');
-} else {
-  navigate('/usuario/home');
-}
+      if (data.user.isSuperAdmin && !gymSlug) {
+        navigate('/super/gyms');
+      } else if (role === 'admin') {
+        navigate('/dashboard');
+      } else if (role === 'recepcionista') {
+        navigate('/recepcion');
+      } else if (role === 'instructor') {
+        navigate('/instructor');
+      } else {
+        navigate('/usuario/home');
+      }
     } catch (err) {
       const msg = err.response?.data?.error || 'Cédula o contraseña incorrectos';
       setErrorMsg(msg);
@@ -67,6 +72,28 @@ if (data.user.isSuperAdmin && !gymSlug) {
   // Colores del gym o defaults
   const primaryColor = gymInfo?.primary_color || '#DC2626';
   const isSuperLogin = !gymSlug;
+
+  const handleSelectRole = async (selectedRole) => {
+    try {
+      // Hacer login de nuevo con el rol seleccionado
+      const res = await authAPI.loginWithRole({
+        cedula: form.cedula,
+        password: form.password,
+        gym: gymSlug,
+        role: selectedRole
+      });
+      await login(form.cedula, form.password, gymSlug, selectedRole);
+      const redirectMap = {
+        admin: '/dashboard',
+        recepcionista: '/recepcion',
+        instructor: '/instructor',
+        user: '/usuario/home'
+      };
+      navigate(redirectMap[selectedRole] || '/usuario/home');
+    } catch (err) {
+      setErrorMsg('Error al seleccionar rol');
+    }
+  };
 
   return (
     <div
@@ -107,8 +134,45 @@ if (data.user.isSuperAdmin && !gymSlug) {
             </>
           )}
         </div>
-
+        
         {/* Form */}
+        {/* Pantalla de selección de rol */}
+        {multiRoleData && (
+          <div className="rounded-2xl p-6 shadow-2xl"
+            style={{ background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <p className="text-center text-white font-bold text-lg mb-1">¡Bienvenido, {multiRoleData.user?.name}!</p>
+            <p className="text-center text-sm opacity-50 mb-5">¿Con qué rol deseas ingresar?</p>
+            <div className="flex flex-col gap-3">
+              {multiRoleData.roles.map(role => {
+                const roleLabels = {
+                  admin: { label: 'Administrador', icon: '🏢', desc: 'Gestionar el gimnasio' },
+                  recepcionista: { label: 'Recepcionista', icon: '👥', desc: 'Atender clientes' },
+                  instructor: { label: 'Instructor', icon: '💪', desc: 'Ver mis clases' },
+                  user: { label: 'Cliente', icon: '🏃', desc: 'Ver mi membresía' }
+                };
+                const r = roleLabels[role] || { label: role, icon: '👤', desc: '' };
+                return (
+                  <button key={role} onClick={() => handleSelectRole(role)}
+                    className="flex items-center gap-4 p-4 rounded-xl text-left transition-all hover:opacity-80"
+                    style={{ backgroundColor: primaryColor }}>
+                    <span className="text-2xl">{r.icon}</span>
+                    <div>
+                      <p className="font-bold text-white">{r.label}</p>
+                      <p className="text-xs text-white opacity-70">{r.desc}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            <button onClick={() => setMultiRoleData(null)}
+              className="w-full mt-3 py-2 text-xs opacity-40 hover:opacity-70 transition-opacity text-white">
+              ← Volver al login
+            </button>
+          </div>
+        )}
+
+        {/* Formulario normal — ocultar si hay multiRole */}
+        {!multiRoleData && (
         <form
           onSubmit={handleSubmit}
           className="rounded-2xl p-6 shadow-2xl"
@@ -170,6 +234,7 @@ if (data.user.isSuperAdmin && !gymSlug) {
             )}
           </div>
         </form>
+        )}
 
         {/* Info gym */}
         {gymInfo && (
