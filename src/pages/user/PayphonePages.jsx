@@ -70,7 +70,6 @@ export function UserPayphonePage() {
             return;
           }
           try {
-            console.log('Renderizando cajita con token:', payphoneData.token?.substring(0, 20));
             new window.PPaymentButtonBox({
               token: payphoneData.token,
               clientTransactionId: payphoneData.clientTransactionId,

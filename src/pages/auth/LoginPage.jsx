@@ -40,9 +40,7 @@ const [errorMsg, setErrorMsg] = useState('');
     setLoading(true);
     try {
       const data = await login(form.cedula, form.password, gymSlug || undefined);
-console.log('DATA LOGIN:', JSON.stringify(data));
 const role = data.role || data.user?.role;
-console.log('ROLE:', role);
 
 
      // Redirigir según rol
