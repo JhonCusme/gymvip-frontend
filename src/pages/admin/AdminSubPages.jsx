@@ -337,6 +337,7 @@ const [newPassword, setNewPassword] = useState('');
                   <p className="font-bold">{i.name}</p>
                   <p className="text-xs opacity-50">{i.specialization || '—'}</p>
                   <p className="text-xs opacity-40">{i.phone}</p>
+                  {i.cedula && <p className="text-xs opacity-40">C.I.: {i.cedula}</p>}
                   <p className="text-xs opacity-30">{i.schedule_count} horarios asignados</p>
                 </div>
                 
