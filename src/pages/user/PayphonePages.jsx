@@ -39,14 +39,61 @@ export function UserPayphonePage() {
       .finally(() => setLoading(false));
   }, [planId]);
 
-  // Cargar cajita cuando llega al paso de pago
   useEffect(() => {
-    if (step !== 'payment' || !paymentData || !planId) return;
+    if (step !== 'payment' || !planId) return;
     scriptLoaded.current = false;
+
+    // Primero obtener datos completos con token
     api.get('/usuario/payphone/init', { params: { membershipTypeId: planId, recurring: wantsRecurring } })
       .then(r => {
-        console.log('Datos init payment:', JSON.stringify(r.data).substring(0, 100));
-        setPaymentData(prev => ({ ...prev, ...r.data }));
+        const data = r.data;
+        setPaymentData(prev => ({ ...prev, ...data }));
+
+        // Luego cargar el script con los datos correctos
+        const loadScript = () => {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = 'https://cdn.payphonetodoesposible.com/box/v2.0/payphone-payment-box.css';
+          document.head.appendChild(link);
+
+          const script = document.createElement('script');
+          script.type = 'module';
+          script.src = 'https://cdn.payphonetodoesposible.com/box/v2.0/payphone-payment-box.js';
+          script.onload = () => renderCajita(data);
+          document.head.appendChild(script);
+          scriptLoaded.current = true;
+        };
+
+        const renderCajita = (payphoneData) => {
+          if (!window.PPaymentButtonBox) {
+            setTimeout(() => renderCajita(payphoneData), 500);
+            return;
+          }
+          try {
+            console.log('Renderizando cajita con token:', payphoneData.token?.substring(0, 20));
+            new window.PPaymentButtonBox({
+              token: payphoneData.token,
+              clientTransactionId: payphoneData.clientTransactionId,
+              amount: payphoneData.amount,
+              amountWithoutTax: payphoneData.amountWithoutTax,
+              currency: payphoneData.currency,
+              storeId: payphoneData.storeId,
+              reference: payphoneData.reference,
+              lang: payphoneData.lang || 'es',
+              timeZone: payphoneData.timeZone || -5,
+              ...(payphoneData.phoneNumber && { phoneNumber: payphoneData.phoneNumber }),
+              ...(payphoneData.email && { email: payphoneData.email }),
+              ...(payphoneData.documentId && { documentId: payphoneData.documentId }),
+              identificationType: payphoneData.identificationType || 1,
+              defaultMethod: 'card',
+            }).render('pp-button');
+          } catch (err) {
+            console.error('Error rendering cajita:', err);
+            setError('Error al cargar el formulario de pago.');
+          }
+        };
+
+        loadScript();
       })
       .catch(err => {
         console.error('Error iniciando pago:', err);
@@ -54,59 +101,6 @@ export function UserPayphonePage() {
         setStep('choice');
       });
   }, [step]);
-
-  // Inyectar los scripts de PayPhone y renderizar la cajita
-  useEffect(() => {
-    if (!paymentData || scriptLoaded.current || step !== 'payment') return;
-    
-    const loadScript = () => {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = 'https://cdn.payphonetodoesposible.com/box/v2.0/payphone-payment-box.css';
-      document.head.appendChild(link);
-
-      const script = document.createElement('script');
-      script.type = 'module';
-      script.src = 'https://cdn.payphonetodoesposible.com/box/v2.0/payphone-payment-box.js';
-      script.onload = () => renderCajita();
-      document.head.appendChild(script);
-
-      scriptLoaded.current = true;
-    };
-
-    const renderCajita = () => {
-      if (!window.PPaymentButtonBox) {
-        setTimeout(renderCajita, 500);
-        return;
-      }
-      const appUrl = window.location.origin;
-      try {
-        console.log('PayPhone token enviado:', paymentData.token?.substring(0, 30));
-        console.log('PayPhone storeId enviado:', paymentData.storeId);
-        new window.PPaymentButtonBox({
-          token: paymentData.token,
-          clientTransactionId: paymentData.clientTransactionId,
-          amount: paymentData.amount,
-          amountWithoutTax: paymentData.amountWithoutTax,
-          currency: paymentData.currency,
-          storeId: paymentData.storeId,
-          reference: paymentData.reference,
-          lang: paymentData.lang || 'es',
-          timeZone: paymentData.timeZone || -5,
-          ...(paymentData.phoneNumber && { phoneNumber: paymentData.phoneNumber }),
-          ...(paymentData.email && { email: paymentData.email }),
-          ...(paymentData.documentId && { documentId: paymentData.documentId }),
-          identificationType: paymentData.identificationType || 1,
-          defaultMethod: 'card',
-        }).render('pp-button');
-      } catch (err) {
-        console.error('Error rendering cajita:', err);
-        setError('Error al cargar el formulario de pago. Intenta de nuevo.');
-      }
-    };
-
-    loadScript();
-  }, [paymentData, step]);
 
   if (loading) return (
     <UserLayout title="Pagar con PayPhone" showBack>
