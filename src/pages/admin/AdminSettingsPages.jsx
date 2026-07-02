@@ -146,7 +146,8 @@ export function AdminSettingsPage() {
       .then(r => {
         if (r.data) setPayphoneForm({ 
           storeId: r.data.storeId || '', 
-          token: r.data.token || '' 
+          token: r.data.token || '' ,
+          enabled: r.data.enabled || false
         });
       })
       .catch(() => {});
@@ -263,7 +264,7 @@ export function AdminSettingsPage() {
             <div>
               <h3 className="font-bold mb-1">PayPhone</h3>
               <p className="text-xs opacity-50 mb-4">Configura las credenciales para cobrar membresías desde la app de usuario.</p>
-              {!gym?.payphoneEnabled && (
+              {!payphoneForm.enabled && (
                 <div className="p-3 rounded-xl mb-4 text-xs" style={{ background: 'rgba(234,179,8,0.1)', border: '1px solid rgba(234,179,8,0.3)', color: '#fbbf24' }}>
                   ⚠ PayPhone está deshabilitado. Solicita al super admin habilitarlo.
                 </div>
