@@ -80,6 +80,8 @@ export function UserPayphonePage() {
       }
       const appUrl = window.location.origin;
       try {
+        console.log('PayPhone token enviado:', paymentData.token?.substring(0, 30));
+        console.log('PayPhone storeId enviado:', paymentData.storeId);
         new window.PPaymentButtonBox({
           token: paymentData.token,
           clientTransactionId: paymentData.clientTransactionId,
