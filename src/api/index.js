@@ -134,6 +134,9 @@ export const adminAPI = {
   getAttendance: (params) => api.get('/admin/attendance', { params }),
   getReceptionAudit: (params) => api.get('/admin/reception-audit', { params }),
   validateEntry: (data) => api.post('/admin/validate-entry', data),
+  // Asignar Roles Adicionales
+  assignRole: (userId, role) => api.post(`/admin/users/${userId}/roles`, { role }),
+  removeRole: (userId, role) => api.delete(`/admin/users/${userId}/roles/${role}`),
 };
 
 // ============================================================

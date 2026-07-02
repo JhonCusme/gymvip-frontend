@@ -304,6 +304,20 @@ const [newPassword, setNewPassword] = useState('');
     } catch { toast.error('Error al resetear. El instructor puede no tener cuenta de acceso.'); }
   };
 
+  const handleToggleUserRole = async (userId, role, hasRole) => {
+    if (!userId) return toast.error('Este instructor no tiene cuenta de acceso');
+    try {
+      if (hasRole) {
+        await adminAPI.removeRole(userId, role);
+        toast.success('Rol removido');
+      } else {
+        await adminAPI.assignRole(userId, role);
+        toast.success('Rol asignado');
+      }
+      load();
+    } catch { toast.error('Error al actualizar rol'); }
+  };
+
   return (
     <div className="fade-in">
       <PageHeader title="Instructores"
@@ -325,10 +339,16 @@ const [newPassword, setNewPassword] = useState('');
                   <p className="text-xs opacity-40">{i.phone}</p>
                   <p className="text-xs opacity-30">{i.schedule_count} horarios asignados</p>
                 </div>
+                
                <div className="ml-auto flex-shrink-0 flex items-center gap-1">
                   <span className={i.is_active ? 'badge-active' : 'badge-inactive'}>
                     {i.is_active ? 'Activo' : 'Inactivo'}
                   </span>
+                  <button onClick={() => handleToggleUserRole(i.user_id, 'user', i.has_user_role)}
+                    title={i.has_user_role ? 'Quitar rol usuario' : 'Dar rol usuario'}
+                    className={`px-2 py-1 rounded text-xs font-medium transition-all ${i.has_user_role ? 'bg-green-500/20 text-green-400' : 'bg-white/10 opacity-50 hover:opacity-100'}`}>
+                    👤 {i.has_user_role ? 'Es usuario' : '+ Usuario'}
+                  </button>
                   <button onClick={() => {
                       setEditInstructor(i);
                       setForm({ name: i.name, photoUrl: i.photo_url || '', specialization: i.specialization || '', phone: i.phone || '', cedula: '', password: '', bio: i.bio || '', isActive: i.is_active });
