@@ -115,10 +115,10 @@ export function UserHomePage() {
             </div>
             <p className="text-sm font-semibold">{membership.type_name}</p>
             <p className="text-xs opacity-50">
-              Inicio: {new Date(membership.start_date).toLocaleDateString('es-EC')}
+              Inicio: {new Date(membership.start_date + 'T00:00:00').toLocaleDateString('es-EC')}
             </p>
             <p className="text-xs opacity-50">
-              Válida hasta: {new Date(membership.end_date).toLocaleDateString('es-EC')}
+              Válida hasta: {new Date(membership.end_date + 'T00:00:00').toLocaleDateString('es-EC')}
             </p>
             {membership.auto_renew && (
               <>
