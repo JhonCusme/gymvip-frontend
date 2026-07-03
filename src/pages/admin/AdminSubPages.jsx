@@ -353,32 +353,53 @@ const [savingMem, setSavingMem] = useState(false);
         : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {instructors.map(i => (
-              <div key={i.id} className="rounded-xl p-4 flex items-center gap-3" style={{ background: '#1a1a1a' }}>
-                <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  {i.photo_url ? <img src={i.photo_url} alt="" className="w-full h-full object-cover" />
-                    : <span className="font-bold text-lg opacity-50">{i.name?.charAt(0)}</span>}
+             <div key={i.id} className="rounded-xl p-4 flex flex-col gap-3" style={{ background: '#1a1a1a' }}>
+                {/* Info del instructor */}
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {i.photo_url ? <img src={i.photo_url} alt="" className="w-full h-full object-cover" />
+                      : <span className="font-bold text-lg opacity-50">{i.name?.charAt(0)}</span>}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold">{i.name}</p>
+                    <p className="text-xs opacity-50">{i.specialization || '—'}</p>
+                    {i.cedula && <p className="text-xs opacity-40">C.I.: {i.cedula}</p>}
+                    <p className="text-xs opacity-30">{i.schedule_count} horarios asignados</p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="font-bold">{i.name}</p>
-                  <p className="text-xs opacity-50">{i.specialization || '—'}</p>
-                  <p className="text-xs opacity-40">{i.phone}</p>
-                  {i.cedula && <p className="text-xs opacity-40">C.I.: {i.cedula}</p>}
-                  <p className="text-xs opacity-30">{i.schedule_count} horarios asignados</p>
-                </div>
-                
-               <div className="ml-auto flex-shrink-0 flex items-center gap-1">
+
+                {/* Badges de estado */}
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className={i.is_active ? 'badge-active' : 'badge-inactive'}>
                     {i.is_active ? 'Activo' : 'Inactivo'}
                   </span>
+                  {i.has_user_role && (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">
+                      👤 Usuario
+                    </span>
+                  )}
+                  {i.has_active_membership ? (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400">
+                      ✓ Membresía activa
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/20 text-red-400">
+                      Sin membresía
+                    </span>
+                  )}
+                </div>
+
+                {/* Botones de acción */}
+                <div className="flex items-center gap-1 flex-wrap">
                   <button onClick={() => handleToggleUserRole(i.user_id, 'user', i.has_user_role)}
                     title={i.has_user_role ? 'Quitar rol usuario' : 'Dar rol usuario'}
                     className={`px-2 py-1 rounded text-xs font-medium transition-all ${i.has_user_role ? 'bg-green-500/20 text-green-400' : 'bg-white/10 opacity-50 hover:opacity-100'}`}>
                     👤 {i.has_user_role ? 'Es usuario' : '+ Usuario'}
                   </button>
                   <button onClick={() => {
-                    setEditInstructor(i);
-                    setForm({ name: i.name, photoUrl: i.photo_url || '', specialization: i.specialization || '', phone: i.phone || '', cedula: i.cedula || '', password: '', bio: i.bio || '', isActive: i.is_active });
-                    setShowModal(true);
+                      setEditInstructor(i);
+                      setForm({ name: i.name, photoUrl: i.photo_url || '', specialization: i.specialization || '', phone: i.phone || '', cedula: i.cedula || '', password: '', bio: i.bio || '', isActive: i.is_active });
+                      setShowModal(true);
                     }}
                     className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all">
                     <Edit2 size={13} />
