@@ -246,6 +246,10 @@ export function AdminInstructorsPage() {
   const [saving, setSaving] = useState(false);
   const [showResetPass, setShowResetPass] = useState(null);
 const [newPassword, setNewPassword] = useState('');
+const [showMemInstructor, setShowMemInstructor] = useState(null);
+const [memTypes, setMemTypes] = useState([]);
+const [memForm, setMemForm] = useState({ membershipTypeId: '', method: 'cortesia' });
+const [savingMem, setSavingMem] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -254,7 +258,10 @@ const [newPassword, setNewPassword] = useState('');
     finally { setLoading(false); }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { 
+    load(); 
+    adminAPI.getMembershipTypes().then(r => setMemTypes(r.data)).catch(() => {});
+  }, []);
 
  const save = async () => {
     if (!form.name) return toast.error('Nombre requerido');
@@ -318,6 +325,24 @@ const [newPassword, setNewPassword] = useState('');
     } catch { toast.error('Error al actualizar rol'); }
   };
 
+  const handleAssignMembership = async () => {
+    if (!memForm.membershipTypeId) return toast.error('Selecciona un tipo de membresía');
+    if (!showMemInstructor.user_id) return toast.error('Este instructor no tiene cuenta de usuario asociada');
+    setSavingMem(true);
+    try {
+      await adminAPI.activateMembership(showMemInstructor.user_id, {
+        membershipTypeId: memForm.membershipTypeId,
+        method: memForm.method,
+        amount: 0
+      });
+      toast.success('Membresía asignada exitosamente');
+      setShowMemInstructor(null);
+      setMemForm({ membershipTypeId: '', method: 'cortesia' });
+      load();
+    } catch (err) { toast.error(err.response?.data?.error || 'Error al asignar membresía'); }
+    finally { setSavingMem(false); }
+  };
+
   return (
     <div className="fade-in">
       <PageHeader title="Instructores"
@@ -357,6 +382,11 @@ const [newPassword, setNewPassword] = useState('');
                     }}
                     className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all">
                     <Edit2 size={13} />
+                  </button>
+                  <button onClick={() => { setShowMemInstructor(i); setMemForm({ membershipTypeId: '', method: 'cortesia' }); }}
+                    title="Asignar membresía"
+                    className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all">
+                    <CreditCard size={13} />
                   </button>
                   <button onClick={() => { setShowResetPass(i); setNewPassword(''); }}
                     title="Resetear contraseña"
@@ -444,6 +474,48 @@ const [newPassword, setNewPassword] = useState('');
                 className="btn-primary flex-1 text-sm"
                 style={{ backgroundColor: gym?.primaryColor || '#E85D04' }}>
                 Resetear Contraseña
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+      <Modal open={!!showMemInstructor} onClose={() => setShowMemInstructor(null)} title="Asignar Membresía">
+        {showMemInstructor && (
+          <div className="flex flex-col gap-4">
+            <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
+              <p className="text-xs opacity-50">Instructor</p>
+              <p className="font-bold">{showMemInstructor.name}</p>
+              {!showMemInstructor.user_id && (
+                <p className="text-xs text-red-400 mt-1">⚠ Este instructor no tiene cuenta de usuario asociada</p>
+              )}
+            </div>
+            <Field label="Tipo de Membresía" required>
+              <select className="input-field" value={memForm.membershipTypeId}
+                onChange={e => setMemForm({ ...memForm, membershipTypeId: e.target.value })}>
+                <option value="">Seleccionar tipo</option>
+                {memTypes.filter(t => t.is_active).map(t => (
+                  <option key={t.id} value={t.id}>
+                    {t.name} — ${parseFloat(t.price).toFixed(2)}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Método">
+              <select className="input-field" value={memForm.method}
+                onChange={e => setMemForm({ ...memForm, method: e.target.value })}>
+                <option value="cortesia">Cortesía</option>
+                <option value="beca">Beca</option>
+                <option value="efectivo">Efectivo</option>
+                <option value="transferencia">Transferencia</option>
+              </select>
+            </Field>
+            <div className="flex gap-3">
+              <button onClick={() => setShowMemInstructor(null)} className="btn-secondary flex-1 text-sm">Cancelar</button>
+              <button onClick={handleAssignMembership} disabled={savingMem || !showMemInstructor.user_id}
+                className="btn-primary flex-1 text-sm flex items-center justify-center gap-2"
+                style={{ backgroundColor: gym?.primaryColor || '#E85D04' }}>
+                {savingMem && <Spinner size={14} className="text-white" />}
+                Asignar Membresía
               </button>
             </div>
           </div>
