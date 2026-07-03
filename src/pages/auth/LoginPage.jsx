@@ -34,15 +34,7 @@ const [multiRoleData, setMultiRoleData] = useState(null);
     }
   }, [gymSlug]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!form.cedula || !form.password) return toast.error('Completa todos los campos');
-
-    setLoading(true);
-    try {
-      const data = await login(form.cedula, form.password, gymSlug || undefined);
-
-      useEffect(() => {
+  useEffect(() => {
     // Si ya hay sesión activa, redirigir al panel correspondiente
     const token = localStorage.getItem('gymvip_token');
     const savedRole = localStorage.getItem('gymvip_role');
@@ -57,6 +49,14 @@ const [multiRoleData, setMultiRoleData] = useState(null);
       navigate(redirectMap[savedRole] || '/usuario/home');
     }
   }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.cedula || !form.password) return toast.error('Completa todos los campos');
+
+    setLoading(true);
+    try {
+      const data = await login(form.cedula, form.password, gymSlug || undefined);
 
       // Multi-rol — mostrar pantalla de selección
       if (data.multiRole) {
