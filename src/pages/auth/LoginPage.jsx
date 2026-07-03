@@ -42,6 +42,22 @@ const [multiRoleData, setMultiRoleData] = useState(null);
     try {
       const data = await login(form.cedula, form.password, gymSlug || undefined);
 
+      useEffect(() => {
+    // Si ya hay sesión activa, redirigir al panel correspondiente
+    const token = localStorage.getItem('gymvip_token');
+    const savedRole = localStorage.getItem('gymvip_role');
+    if (token && savedRole) {
+      const redirectMap = {
+        admin: '/dashboard',
+        recepcionista: '/recepcion',
+        instructor: '/instructor',
+        user: '/usuario/home',
+        super_admin: '/super/gyms'
+      };
+      navigate(redirectMap[savedRole] || '/usuario/home');
+    }
+  }, []);
+
       // Multi-rol — mostrar pantalla de selección
       if (data.multiRole) {
         setMultiRoleData(data);
