@@ -27,8 +27,7 @@ import WodPage from './pages/admin/WodPage';
 import { ReceptionDashboardPage, ReceptionClientsPage, ReceptionClientDetailPage, ReceptionMembershipsPage, ReceptionPaymentsPage, ReceptionScannerPage, ReceptionSchedulesPage, ReceptionAttendancePage } from './pages/reception/ReceptionPages';
 
 // Instructor
-import { InstructorTodayPage, InstructorRoutinesPage, InstructorAttendancePage, InstructorProfilePage } from './pages/instructor/InstructorPages';
-
+import { InstructorTodayPage, InstructorRoutinesPage, InstructorAttendancePage, InstructorProfilePage, InstructorWodPage } from './pages/instructor/InstructorPages';
 // Usuario
 import { UserHomePage, UserSchedulePage, UserQRPage, UserProfilePage, UserEditProfilePage, UserBookingsPage, UserPaymentHistoryPage, UserNotificationsPage, UserWodPage } from './pages/user/UserPages';
 import { UserPayphonePage, UserPaymentResultPage, UserAutoChargePage } from './pages/user/PayphonePages';
@@ -111,6 +110,7 @@ function AppRoutes() {
       <Route path="/instructor/*" element={<PrivateRoute allowedRoles={['instructor','admin','super_admin']}><InstructorLayout><Routes>
         <Route index element={<InstructorTodayPage />} />
         <Route path="routines" element={<InstructorRoutinesPage />} />
+        <Route path="wod" element={<InstructorWodPage />} />
         <Route path="attendance" element={<InstructorAttendancePage />} />
         <Route path="profile" element={<InstructorProfilePage />} />
         <Route path="*" element={<Navigate to="/instructor" replace />} />

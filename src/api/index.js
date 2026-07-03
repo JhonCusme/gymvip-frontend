@@ -190,6 +190,10 @@ export const instructorAPI = {
   createRoutine: (data) => api.post('/instructor/routines', data),
   getProfile: () => api.get('/instructor/profile'),
   updateProfile: (data) => api.put('/instructor/profile', data),
+  getWods: (params) => api.get('/admin/wods', { params }),
+  getWod: (date) => api.get(`/admin/wods/${date}`),
+  saveWod: (data) => api.post('/admin/wods', data),
+  deleteWod: (date) => api.delete(`/admin/wods/${date}`),
 };
 
 export default api;
