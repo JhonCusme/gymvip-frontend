@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { adminAPI, uploadAPI } from '../../api';
 import { PageHeader, Modal, Field, Spinner, EmptyState, ConfirmDialog } from '../../components/ui';
-import { Plus, Edit2, Trash2, Clock, Users, Key } from 'lucide-react';
+import { Plus, Edit2, Trash2, Clock, Users, Key, CreditCard } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 
