@@ -563,6 +563,10 @@ export function AdminReceptionistsPage() {
   const [saving, setSaving] = useState(false);
   const [showResetPass, setShowResetPass] = useState(null);
   const [newPassword, setNewPassword] = useState('');
+  const [showMemReception, setShowMemReception] = useState(null);
+const [memTypesR, setMemTypesR] = useState([]);
+const [memFormR, setMemFormR] = useState({ membershipTypeId: '', method: 'cortesia' });
+const [savingMemR, setSavingMemR] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -571,7 +575,10 @@ export function AdminReceptionistsPage() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { 
+    load(); 
+    adminAPI.getMembershipTypes().then(r => setMemTypesR(r.data)).catch(() => {});
+  }, []);
 
   const save = async () => {
     if (!form.cedula || !form.name || !form.password) return toast.error('Cédula, nombre y contraseña requeridos');
@@ -602,6 +609,36 @@ export function AdminReceptionistsPage() {
     } catch { toast.error('Error al resetear contraseña'); }
   };
 
+  const handleToggleUserRoleReception = async (userId, role, hasRole) => {
+    try {
+      if (hasRole) {
+        await adminAPI.removeRole(userId, role);
+        toast.success('Rol removido');
+      } else {
+        await adminAPI.assignRole(userId, role);
+        toast.success('Rol asignado');
+      }
+      load();
+    } catch { toast.error('Error al actualizar rol'); }
+  };
+
+  const handleAssignMemReception = async () => {
+    if (!memFormR.membershipTypeId) return toast.error('Selecciona un tipo de membresía');
+    setSavingMemR(true);
+    try {
+      await adminAPI.activateMembership(showMemReception.id, {
+        membershipTypeId: memFormR.membershipTypeId,
+        method: memFormR.method,
+        amount: 0
+      });
+      toast.success('Membresía asignada exitosamente');
+      setShowMemReception(null);
+      setMemFormR({ membershipTypeId: '', method: 'cortesia' });
+      load();
+    } catch (err) { toast.error(err.response?.data?.error || 'Error al asignar membresía'); }
+    finally { setSavingMemR(false); }
+  };
+
   return (
     <div className="fade-in">
       <PageHeader title="Recepcionistas"
@@ -625,8 +662,25 @@ export function AdminReceptionistsPage() {
                     </td>
                     <td className="text-xs opacity-60">{r.email || '—'}</td>
                     <td className="text-xs opacity-60">{r.phone || '—'}</td>
-                    <td><span className={r.is_active ? 'badge-active' : 'badge-inactive'}>{r.is_active ? 'Activo' : 'Inactivo'}</span></td>
+                    <td>
+                      <div className="flex flex-col gap-1">
+                        <span className={r.is_active ? 'badge-active' : 'badge-inactive'}>{r.is_active ? 'Activo' : 'Inactivo'}</span>
+                        {r.has_user_role && <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">👤 Usuario</span>}
+                        {r.has_active_membership 
+                          ? <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400">✓ Membresía</span>
+                          : <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/20 text-red-400">Sin membresía</span>
+                        }
+                      </div>
+                    </td>
                     <td><div className="flex gap-1">
+                      <button onClick={() => handleToggleUserRoleReception(r.id, 'user', r.has_user_role)}
+                        title={r.has_user_role ? 'Quitar rol usuario' : 'Dar rol usuario'}
+                        className={`px-2 py-1 rounded text-xs font-medium transition-all ${r.has_user_role ? 'bg-green-500/20 text-green-400' : 'bg-white/10 opacity-50 hover:opacity-100'}`}>
+                        👤 {r.has_user_role ? 'Usuario' : '+ Usuario'}
+                      </button>
+                      <button onClick={() => { setShowMemReception(r); setMemFormR({ membershipTypeId: '', method: 'cortesia' }); }}
+                        title="Asignar membresía"
+                        className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all"><CreditCard size={13} /></button>
                       <button onClick={() => { setShowResetPass(r); setNewPassword(''); }}
                         title="Resetear contraseña"
                         className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all"><Key size={13} /></button>
@@ -679,6 +733,47 @@ export function AdminReceptionistsPage() {
           </div>
         )}
       </Modal>
+
+      <Modal open={!!showMemReception} onClose={() => setShowMemReception(null)} title="Asignar Membresía">
+        {showMemReception && (
+          <div className="flex flex-col gap-4">
+            <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
+              <p className="text-xs opacity-50">Recepcionista</p>
+              <p className="font-bold">{showMemReception.name}</p>
+            </div>
+            <Field label="Tipo de Membresía" required>
+              <select className="input-field" value={memFormR.membershipTypeId}
+                onChange={e => setMemFormR({ ...memFormR, membershipTypeId: e.target.value })}>
+                <option value="">Seleccionar tipo</option>
+                {memTypesR.filter(t => t.is_active).map(t => (
+                  <option key={t.id} value={t.id}>
+                    {t.name} — ${parseFloat(t.price).toFixed(2)}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Método">
+              <select className="input-field" value={memFormR.method}
+                onChange={e => setMemFormR({ ...memFormR, method: e.target.value })}>
+                <option value="cortesia">Cortesía</option>
+                <option value="beca">Beca</option>
+                <option value="efectivo">Efectivo</option>
+                <option value="transferencia">Transferencia</option>
+              </select>
+            </Field>
+            <div className="flex gap-3">
+              <button onClick={() => setShowMemReception(null)} className="btn-secondary flex-1 text-sm">Cancelar</button>
+              <button onClick={handleAssignMemReception} disabled={savingMemR}
+                className="btn-primary flex-1 text-sm flex items-center justify-center gap-2"
+                style={{ backgroundColor: gym?.primaryColor || '#E85D04' }}>
+                {savingMemR && <Spinner size={14} className="text-white" />}
+                Asignar Membresía
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+      
     </div>
   );
 }
