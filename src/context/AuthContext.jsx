@@ -14,6 +14,31 @@ export const AuthProvider = ({ children }) => {
     const root = document.documentElement;
     if (gymData.primaryColor) root.style.setProperty('--color-primary', gymData.primaryColor);
     if (gymData.secondaryColor) root.style.setProperty('--color-secondary', gymData.secondaryColor);
+
+    // Inyectar manifest dinámico del gym para PWA
+    if (gymData.slug) {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const manifestUrl = `${apiUrl}/gym/${gymData.slug}/manifest.json`;
+      let manifestLink = document.querySelector('link[rel="manifest"]');
+      if (!manifestLink) {
+        manifestLink = document.createElement('link');
+        manifestLink.rel = 'manifest';
+        document.head.appendChild(manifestLink);
+      }
+      manifestLink.href = manifestUrl;
+
+      // Actualizar theme-color
+      let themeColor = document.querySelector('meta[name="theme-color"]');
+      if (!themeColor) {
+        themeColor = document.createElement('meta');
+        themeColor.name = 'theme-color';
+        document.head.appendChild(themeColor);
+      }
+      themeColor.content = gymData.primaryColor || '#E85D04';
+
+      // Actualizar título de la pestaña
+      if (gymData.name) document.title = gymData.name;
+    }
   };
 
   useEffect(() => {
