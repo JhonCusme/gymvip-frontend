@@ -233,7 +233,7 @@ export function AdminSchedulesPage() {
 // ============================================================
 // INSTRUCTORES
 // ============================================================
-const EMPTY_INSTR = { name: '', photoUrl: '', specialization: '', phone: '', cedula: '', password: '', bio: '', isActive: true };
+const EMPTY_INSTR = { name: '', photoUrl: '', specialization: '', phone: '', cedula: '', password: '', bio: '', isActive: true, isHeadCoach: false };
 
 export function AdminInstructorsPage() {
   const { gym } = useAuth();
@@ -400,7 +400,7 @@ const [savingMem, setSavingMem] = useState(false);
                   </button>
                   <button onClick={() => {
                       setEditInstructor(i);
-                      setForm({ name: i.name, photoUrl: i.photo_url || '', specialization: i.specialization || '', phone: i.phone || '', cedula: i.cedula || '', password: '', bio: i.bio || '', isActive: i.is_active });
+                      setForm({ name: i.name, photoUrl: i.photo_url || '', specialization: i.specialization || '', phone: i.phone || '', cedula: i.cedula || '', password: '', bio: i.bio || '', isActive: i.is_active, isHeadCoach: i.is_head_coach || false });
                       setShowModal(true);
                     }}
                     className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all">
@@ -470,6 +470,10 @@ const [savingMem, setSavingMem] = useState(false);
           <label className="flex items-center gap-2 text-sm cursor-pointer">
             <input type="checkbox" checked={form.isActive} onChange={e => setForm({ ...form, isActive: e.target.checked })} className="w-4 h-4" />
             Instructor activo
+          </label>
+          <label className="flex items-center gap-2 text-sm cursor-pointer">
+            <input type="checkbox" checked={form.isHeadCoach} onChange={e => setForm({ ...form, isHeadCoach: e.target.checked })} className="w-4 h-4" />
+            👑 Head Coach (puede crear y editar WODs)
           </label>
           <div className="flex gap-3">
             <button onClick={() => setShowModal(false)} className="btn-secondary flex-1 text-sm">Cancelar</button>
