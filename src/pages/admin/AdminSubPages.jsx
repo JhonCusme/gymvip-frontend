@@ -663,12 +663,12 @@ const [savingMemR, setSavingMemR] = useState(false);
                     <td className="text-xs opacity-60">{r.email || '—'}</td>
                     <td className="text-xs opacity-60">{r.phone || '—'}</td>
                     <td>
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-wrap gap-1">
                         <span className={r.is_active ? 'badge-active' : 'badge-inactive'}>{r.is_active ? 'Activo' : 'Inactivo'}</span>
-                        {r.has_user_role && <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">👤 Usuario</span>}
+                        {r.has_user_role && <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">👤</span>}
                         {r.has_active_membership 
-                          ? <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400">✓ Membresía</span>
-                          : <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/20 text-red-400">Sin membresía</span>
+                          ? <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400">✓ Mem</span>
+                          : <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/20 text-red-400">Sin mem</span>
                         }
                       </div>
                     </td>
