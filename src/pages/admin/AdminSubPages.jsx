@@ -356,9 +356,10 @@ const [savingMem, setSavingMem] = useState(false);
              <div key={i.id} className="rounded-xl p-4 flex flex-col gap-3" style={{ background: '#1a1a1a' }}>
                 {/* Info del instructor */}
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                    {i.photo_url ? <img src={i.photo_url} alt="" className="w-full h-full object-cover" />
-                      : <span className="font-bold text-lg opacity-50">{i.name?.charAt(0)}</span>}
+                  <div className="w-10 h-10 rounded-full bg-white/10 flex-shrink-0 overflow-hidden">
+                    {i.photo_url 
+                      ? <img src={i.photo_url} alt="" className="w-full h-full object-cover rounded-full" />
+                      : <div className="w-full h-full flex items-center justify-center"><span className="font-bold text-sm opacity-50">{i.name?.charAt(0)}</span></div>}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="font-bold">{i.name}</p>
