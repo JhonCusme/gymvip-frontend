@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { instructorAPI } from '../../api';
 import { Modal, Field, Spinner, EmptyState, PageLoader } from '../../components/ui';
-import { CalendarDays, Dumbbell, History, User, LogOut, Plus, ChevronRight } from 'lucide-react';
+import { CalendarDays, Dumbbell, History, User, LogOut, Plus, ChevronRight, Menu, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 // ============================================================
@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 // ============================================================
 export function InstructorLayout({ children }) {
   const { user, gym, logout } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const primaryColor = gym?.primaryColor || '#E85D04';
   const navItems = [
     { to: '/instructor', icon: CalendarDays, label: 'Clases del Día' },
@@ -21,23 +22,35 @@ export function InstructorLayout({ children }) {
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: '#0a0a0a' }}>
-      <aside className="w-48 flex-shrink-0 flex flex-col" style={{ background: '#111', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
-        <div className="p-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-sm"
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/60 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
+
+      <aside className={`w-48 flex-shrink-0 flex flex-col fixed lg:relative h-full z-50 transition-transform duration-300
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
+        style={{ background: '#111', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-sm overflow-hidden flex-shrink-0"
               style={{ backgroundColor: primaryColor }}>
-              {gym?.name?.charAt(0)?.toUpperCase() || 'G'}
+              {gym?.logoUrl
+                ? <img src={gym.logoUrl} alt="" className="w-full h-full object-contain" />
+                : gym?.name?.charAt(0)?.toUpperCase() || 'G'}
             </div>
-            <div>
-              <p className="text-xs font-bold" style={{ color: primaryColor }}>{gym?.name}</p>
+            <div className="min-w-0">
+              <p className="text-xs font-bold truncate" style={{ color: primaryColor }}>{gym?.name}</p>
               <p className="text-xs opacity-30">Panel de Coach</p>
             </div>
           </div>
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden opacity-50 hover:opacity-100">
+            <X size={18} />
+          </button>
         </div>
 
-        <nav className="flex-1 p-2 flex flex-col gap-0.5">
+        <nav className="flex-1 p-2 flex flex-col gap-0.5 overflow-y-auto">
           {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink key={to} to={to} end={to === '/instructor'}
+              onClick={() => setSidebarOpen(false)}
               className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
               style={({ isActive }) => isActive ? { backgroundColor: primaryColor } : {}}>
               <Icon size={15} /><span className="text-xs">{label}</span>
@@ -63,7 +76,19 @@ export function InstructorLayout({ children }) {
       </aside>
 
       <main className="flex-1 overflow-y-auto" style={{ background: '#111' }}>
-        <div className="p-6 min-h-full">{children}</div>
+        <div className="lg:hidden sticky top-0 z-30 flex items-center gap-3 p-4 border-b"
+          style={{ background: '#111', borderColor: 'rgba(255,255,255,0.06)' }}>
+          <button onClick={() => setSidebarOpen(true)} className="opacity-70 hover:opacity-100">
+            <Menu size={22} />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center overflow-hidden" style={{ backgroundColor: primaryColor }}>
+              {gym?.logoUrl ? <img src={gym.logoUrl} alt="" className="w-full h-full object-contain" /> : <span className="text-white text-xs font-bold">{gym?.name?.charAt(0)}</span>}
+            </div>
+            <p className="text-sm font-bold" style={{ color: primaryColor }}>{gym?.name}</p>
+          </div>
+        </div>
+        <div className="p-4 lg:p-6 min-h-full">{children}</div>
       </main>
     </div>
   );
