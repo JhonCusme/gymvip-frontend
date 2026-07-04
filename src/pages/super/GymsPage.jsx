@@ -18,10 +18,29 @@ const THEMES = [
   { value: 'arena_combat', label: 'Arena Combat' },
 ];
 
+const TIMEZONES = [
+  { value: 'America/Guayaquil', label: 'Ecuador (GMT-5)' },
+  { value: 'America/Bogota', label: 'Colombia (GMT-5)' },
+  { value: 'America/Lima', label: 'Perú (GMT-5)' },
+  { value: 'America/Mexico_City', label: 'México Centro (GMT-6)' },
+  { value: 'America/Santiago', label: 'Chile (GMT-3/-4)' },
+  { value: 'America/Argentina/Buenos_Aires', label: 'Argentina (GMT-3)' },
+  { value: 'America/La_Paz', label: 'Bolivia (GMT-4)' },
+  { value: 'America/Caracas', label: 'Venezuela (GMT-4)' },
+  { value: 'America/Santo_Domingo', label: 'Rep. Dominicana (GMT-4)' },
+  { value: 'America/Panama', label: 'Panamá (GMT-5)' },
+  { value: 'America/Costa_Rica', label: 'Costa Rica (GMT-6)' },
+  { value: 'America/Guatemala', label: 'Guatemala (GMT-6)' },
+  { value: 'America/Montevideo', label: 'Uruguay (GMT-3)' },
+  { value: 'America/Asuncion', label: 'Paraguay (GMT-3/-4)' },
+  { value: 'Europe/Madrid', label: 'España (GMT+1/+2)' },
+];
+
 const DEFAULT_FORM = {
   slug: '', name: '', logoUrl: '', email: '', phone: '', address: '',
   payphoneEnabled: false, bookingAdvanceDays: 7,
-  primaryColor: '#E85D04', secondaryColor: '#000000', theme: 'classic_red'
+  primaryColor: '#E85D04', secondaryColor: '#000000', theme: 'classic_red',
+  timezone: 'America/Guayaquil'
 };
 
 export default function SuperGymsPage() {
@@ -250,6 +269,12 @@ export default function SuperGymsPage() {
               {THEMES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>
           </Field>
+
+          <Field label="Zona horaria">
+              <select className="input-field" value={form.timezone} onChange={(e) => setForm({ ...form, timezone: e.target.value })}>
+                {TIMEZONES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+              </select>
+            </Field>
 
           <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: 'rgba(0,0,0,0.06)' }}>
             <div>
