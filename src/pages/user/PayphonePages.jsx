@@ -163,11 +163,7 @@ api.get('/usuario/payphone/init', { params: { membershipTypeId: planId, recurrin
                   </p>
                 </>
               )}
-              {paymentData?.plan?.lostDiscount && (
-                <div className="p-3 rounded-xl mb-3 text-xs" style={{ background: 'rgba(234,179,8,0.15)', border: '1px solid rgba(234,179,8,0.4)', color: '#fbbf24' }}>
-                  ⚠ <strong>Este primer cobro será a precio normal (${parseFloat(paymentData?.plan?.price || 0).toFixed(2)})</strong> porque tu cobro automático anterior se suspendió por pagos fallidos. A partir del siguiente mes recuperarás automáticamente tu descuento del {paymentData.plan.recurringDiscount}%.
-                </div>
-              )}
+    
               <button onClick={() => { setWantsRecurring(true); setStep('consent'); }}
                 className="w-full py-3 rounded-xl font-bold text-white mb-2"
                 style={{ backgroundColor: '#16a34a' }}>
