@@ -297,6 +297,10 @@ export function UserPaymentResultPage() {
     const id = searchParams.get('id');
     const clientTransactionId = searchParams.get('clientTransactionId');
     const ctoken = searchParams.get('ctoken');
+    const gymSlug = searchParams.get('gym');
+    if (gymSlug) {
+      localStorage.setItem('gymvip_slug', gymSlug);
+    }
 
     if (!id || !clientTransactionId) {
       setStatus('error');
