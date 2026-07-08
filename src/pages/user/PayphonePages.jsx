@@ -7,6 +7,7 @@ import { Spinner } from '../../components/ui';
 import { Check, X, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../api';
+import SignatureCanvas from 'react-signature-canvas';
 
 // ============================================================
 // PÁGINA DE PAGO — renderiza la Cajita de Pagos oficial de PayPhone
@@ -26,6 +27,7 @@ export function UserPayphonePage() {
   const [signingConsent, setSigningConsent] = useState(false);
   const cajitaRef = useRef(null);
   const scriptLoaded = useRef(false);
+  const sigCanvasRef = useRef(null);
 
  useEffect(() => {
     if (!planId) {
@@ -216,15 +218,31 @@ api.get('/usuario/payphone/init', { params: { membershipTypeId: planId, recurrin
               <br /><br />
               Declaro que soy el titular legítimo de la tarjeta registrada y que he leído y comprendido los términos de esta autorización. Esta aceptación queda registrada con mi identificación, fecha, hora y dirección IP como evidencia de consentimiento.
                           </div>
+                          <div className="mb-4">
+              <p className="text-xs opacity-60 mb-2">Firma con tu dedo para autorizar:</p>
+              <div className="rounded-xl overflow-hidden" style={{ background: '#ffffff', border: '2px solid rgba(255,255,255,0.2)' }}>
+                <SignatureCanvas
+                  ref={sigCanvasRef}
+                  penColor="black"
+                  canvasProps={{ className: 'w-full', style: { height: '150px' } }}
+                />
+              </div>
+              <button onClick={() => sigCanvasRef.current?.clear()}
+                className="text-xs mt-1 opacity-50 hover:opacity-100">
+                🗑 Borrar firma
+              </button>
+            </div>
             <label className="flex items-start gap-3 cursor-pointer mb-4">
               <input type="checkbox" checked={consentSigned} onChange={e => setConsentSigned(e.target.checked)} className="mt-0.5 w-4 h-4 flex-shrink-0" />
               <span className="text-xs opacity-60">He leído y acepto los términos del contrato de autorización de débito automático</span>
             </label>
             <button onClick={async () => {
               if (!consentSigned) return toast.error('Debes aceptar el contrato');
+              if (sigCanvasRef.current?.isEmpty()) return toast.error('Debes firmar para continuar');
               setSigningConsent(true);
               try {
-                await api.post('/usuario/payphone/consent');
+                const signature = sigCanvasRef.current.getCanvas().toDataURL('image/png');
+                await api.post('/usuario/payphone/consent', { signature });
                 setStep('payment');
               } catch { toast.error('Error al firmar consentimiento'); }
               finally { setSigningConsent(false); }
