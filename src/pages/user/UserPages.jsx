@@ -137,16 +137,25 @@ export function UserHomePage() {
               </div>
               <p className="font-bold text-red-400">Membresía Vencida</p>
             </div>
+            {membership?.recurring_failed_attempts > 0 && membership?.recurring_failed_attempts < 3 && (
+              <p className="text-xs text-yellow-400 mb-2">
+                ⚠ Tu cobro automático falló ({membership.recurring_failed_attempts}/3 intentos). Puedes pagar manualmente ahora.
+              </p>
+            )}
+            {membership?.recurring_failed_attempts >= 3 && (
+              <p className="text-xs text-red-400 mb-2">
+                Tu cobro automático se desactivó tras 3 intentos fallidos. Realiza el pago manualmente para reactivar tu membresía.
+              </p>
+            )}
             {gym?.payphoneEnabled && (
               <button onClick={openPlans}
                 className="w-full py-2.5 rounded-xl font-bold text-white text-sm mt-1"
                 style={{ backgroundColor: primaryColor }}>
-                Pagar con PayPhone
+                Pagar ahora
               </button>
             )}
           </div>
         )}
-      </div>
 
       {/* Tu gimnasio */}
       <div className="rounded-2xl p-4 mb-4 border" style={{ background: '#1a1a1a', borderColor: 'rgba(255,255,255,0.06)' }}>
