@@ -148,10 +148,26 @@ api.get('/usuario/payphone/init', { params: { membershipTypeId: planId, recurrin
         <div className="flex flex-col gap-4">
           {paymentData?.plan?.recurringDiscount > 0 && (
             <div className="rounded-2xl p-5 border-2" style={{ background: 'rgba(22,163,74,0.08)', borderColor: '#16a34a' }}>
-              <p className="font-black text-lg text-green-400 mb-1">🎉 Ahorra {paymentData.plan.recurringDiscount}% activando el cobro automático</p>
-              <p className="text-sm opacity-70 mb-3">
-                Activa la renovación automática y paga ${(parseFloat(paymentData?.plan?.price || 0) * (1 - (paymentData?.plan?.recurringDiscount || 0) / 100)).toFixed(2)} en lugar de ${parseFloat(paymentData?.plan?.price || 0).toFixed(2)} cada vez.
-              </p>
+              {paymentData?.plan?.lostDiscount ? (
+                <>
+                  <p className="font-black text-lg text-green-400 mb-1">Activa el cobro automático</p>
+                  <p className="text-sm opacity-70 mb-3">
+                    Este cobro será de <strong>${parseFloat(paymentData?.plan?.price || 0).toFixed(2)}</strong> (precio normal), porque tu cobro automático anterior se suspendió por pagos fallidos. Desde el próximo mes recuperarás tu descuento del {paymentData.plan.recurringDiscount}%.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-black text-lg text-green-400 mb-1">🎉 Ahorra {paymentData.plan.recurringDiscount}% activando el cobro automático</p>
+                  <p className="text-sm opacity-70 mb-3">
+                    Activa la renovación automática y paga ${(parseFloat(paymentData?.plan?.price || 0) * (1 - (paymentData?.plan?.recurringDiscount || 0) / 100)).toFixed(2)} en lugar de ${parseFloat(paymentData?.plan?.price || 0).toFixed(2)} cada vez.
+                  </p>
+                </>
+              )}
+              {paymentData?.plan?.lostDiscount && (
+                <div className="p-3 rounded-xl mb-3 text-xs" style={{ background: 'rgba(234,179,8,0.15)', border: '1px solid rgba(234,179,8,0.4)', color: '#fbbf24' }}>
+                  ⚠ <strong>Este primer cobro será a precio normal (${parseFloat(paymentData?.plan?.price || 0).toFixed(2)})</strong> porque tu cobro automático anterior se suspendió por pagos fallidos. A partir del siguiente mes recuperarás automáticamente tu descuento del {paymentData.plan.recurringDiscount}%.
+                </div>
+              )}
               <button onClick={() => { setWantsRecurring(true); setStep('consent'); }}
                 className="w-full py-3 rounded-xl font-bold text-white mb-2"
                 style={{ backgroundColor: '#16a34a' }}>
@@ -186,8 +202,24 @@ api.get('/usuario/payphone/init', { params: { membershipTypeId: planId, recurrin
             <p className="font-bold mb-2">Contrato de Autorización</p>
             <div className="rounded-xl p-3 max-h-48 overflow-y-auto text-xs opacity-60 leading-relaxed mb-3"
               style={{ background: 'rgba(255,255,255,0.04)' }}>
-              Por medio del presente instrumento, autorizo expresamente a {gym?.name} a almacenar de forma segura el token de mi tarjeta y realizar cobros automáticos por el valor de mi membresía vigente al momento de cada renovación. Esta autorización puede ser revocada en cualquier momento desde mi perfil.
-            </div>
+              <strong>AUTORIZACIÓN DE DÉBITO AUTOMÁTICO RECURRENTE</strong>
+              <br /><br />
+              Por medio del presente documento, yo, en mi calidad de titular de la tarjeta, autorizo de manera libre, expresa e informada a <strong>{gym?.name}</strong> a través de su procesador de pagos autorizado PayPhone, a lo siguiente:
+              <br /><br />
+              <strong>1. Almacenamiento seguro:</strong> Guardar de forma tokenizada y segura los datos de mi tarjeta, cumpliendo los estándares de seguridad PCI DSS. {gym?.name} no almacena directamente los números de mi tarjeta.
+              <br /><br />
+              <strong>2. Cobros recurrentes:</strong> Realizar cobros automáticos periódicos por el valor correspondiente a mi plan de membresía vigente, en cada fecha de renovación, según la periodicidad del plan contratado.
+              <br /><br />
+              <strong>3. Monto:</strong> El monto a debitar corresponderá al precio de mi membresía vigente al momento de cada cobro, el cual puede incluir descuentos por pago recurrente. Seré notificado de cualquier cambio de precio.
+              <br /><br />
+              <strong>4. Reintentos:</strong> En caso de que un cobro sea rechazado, autorizo hasta 3 reintentos en días consecutivos. Tras 3 intentos fallidos, esta autorización quedará suspendida automáticamente.
+              <br /><br />
+              <strong>5. Revocación:</strong> Puedo revocar esta autorización en cualquier momento desde mi perfil en la aplicación o contactando directamente al establecimiento, sin penalización. La revocación aplica para cobros futuros.
+              <br /><br />
+              <strong>6. Notificaciones:</strong> Recibiré una notificación por cada cobro realizado, exitoso o fallido.
+              <br /><br />
+              Declaro que soy el titular legítimo de la tarjeta registrada y que he leído y comprendido los términos de esta autorización. Esta aceptación queda registrada con mi identificación, fecha, hora y dirección IP como evidencia de consentimiento.
+                          </div>
             <label className="flex items-start gap-3 cursor-pointer mb-4">
               <input type="checkbox" checked={consentSigned} onChange={e => setConsentSigned(e.target.checked)} className="mt-0.5 w-4 h-4 flex-shrink-0" />
               <span className="text-xs opacity-60">He leído y acepto los términos del contrato de autorización de débito automático</span>
