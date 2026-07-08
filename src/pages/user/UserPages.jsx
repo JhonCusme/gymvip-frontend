@@ -156,6 +156,7 @@ export function UserHomePage() {
             )}
           </div>
         )}
+        </div>
 
       {/* Tu gimnasio */}
       <div className="rounded-2xl p-4 mb-4 border" style={{ background: '#1a1a1a', borderColor: 'rgba(255,255,255,0.06)' }}>
