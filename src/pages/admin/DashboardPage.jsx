@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { adminAPI } from '../../api';
 import { KPICard, PageLoader } from '../../components/ui';
-import { Users, UserCheck, CalendarCheck, AlertTriangle } from 'lucide-react';
+import { Users, UserCheck, CalendarCheck, AlertTriangle, CreditCard, Gift } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -30,10 +30,12 @@ export default function AdminDashboardPage() {
     <div className="fade-in">
       <h1 className="text-xl font-bold mb-5">Dashboard</h1>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-5">
+     {/* KPIs */}
+      <div className="grid grid-cols-2 xl:grid-cols-3 gap-3 mb-5">
         <KPICard title="Total Usuarios" value={kpis.total_users} icon={Users} iconBg="bg-blue-600" />
         <KPICard title="Miembros Activos" value={kpis.active_members} icon={UserCheck} iconBg="bg-green-600" />
+        <KPICard title="Membresías de Pago" value={kpis.paid_members} icon={CreditCard} iconBg="bg-emerald-600" />
+        <KPICard title="Becas / Cortesías" value={kpis.free_members} icon={Gift} iconBg="bg-pink-600" />
         <KPICard title="Reservas Hoy" value={kpis.reservas_hoy} icon={CalendarCheck} iconBg="bg-purple-600" />
         <KPICard title="Por Vencer" value={kpis.por_vencer} icon={AlertTriangle} iconBg="bg-yellow-600" />
       </div>
