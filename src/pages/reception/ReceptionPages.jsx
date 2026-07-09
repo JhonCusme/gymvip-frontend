@@ -664,7 +664,11 @@ export function ReceptionSchedulesPage() {
     const d = new Date();
     const diff = dow - d.getDay();
     d.setDate(d.getDate() + diff);
-    return d.toISOString().split('T')[0];
+    // Construir fecha en formato local YYYY-MM-DD sin conversión UTC
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   const load = async (dow) => {

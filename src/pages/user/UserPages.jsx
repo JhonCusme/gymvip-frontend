@@ -246,20 +246,25 @@ export function UserSchedulePage() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [booking, setBooking] = useState(null);
 
-  // Generar próximos 7 días
+  // Generar días según los que permite agendar el gym
   useEffect(() => {
+    const advanceDays = gym?.bookingAdvanceDays || 7;
     const d = [];
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i <= advanceDays; i++) {
       const date = new Date();
       date.setDate(date.getDate() + i);
+      // Fecha local sin conversión UTC
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
       d.push({
-        date: date.toISOString().split('T')[0],
+        date: `${year}-${month}-${day}`,
         day: date.toLocaleDateString('es-ES', { weekday: 'short' }),
         num: date.getDate()
       });
     }
     setDates(d);
-  }, []);
+  }, [gym]);
 
   const load = async (date) => {
     setLoading(true);
