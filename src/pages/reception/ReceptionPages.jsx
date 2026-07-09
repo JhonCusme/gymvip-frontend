@@ -112,7 +112,7 @@ export function ReceptionClientsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showCreate, setShowCreate] = useState(false);
-  const [form, setForm] = useState({ cedula: '', name: '', email: '', phone: '', password: '' });
+  const [form, setForm] = useState({ cedula: '', name: '', email: '', phone: '', password: '', confirmPassword: '', birthDate: '', emergencyContactName: '', emergencyContactPhone: '' });
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
@@ -124,14 +124,16 @@ export function ReceptionClientsPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  const handleCreate = async () => {
+ const handleCreate = async () => {
     if (!form.cedula || !form.name || !form.password) return toast.error('Cédula, nombre y contraseña requeridos');
+    if (form.password !== form.confirmPassword) return toast.error('Las contraseñas no coinciden');
+    if (form.password.length < 6) return toast.error('La contraseña debe tener al menos 6 caracteres');
     setSaving(true);
     try {
       await receptionAPI.createClient(form);
       toast.success('Cliente creado');
       setShowCreate(false);
-      setForm({ cedula: '', name: '', email: '', phone: '', password: '' });
+      setForm({ cedula: '', name: '', email: '', phone: '', password: '', confirmPassword: '', birthDate: '', emergencyContactName: '', emergencyContactPhone: '' });
       load();
     } catch (err) { toast.error(err.response?.data?.error || 'Error al crear'); }
     finally { setSaving(false); }
@@ -173,14 +175,57 @@ export function ReceptionClientsPage() {
           ))}
       </div>
 
-      <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Nuevo Cliente">
+      <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Nuevo Cliente" maxWidth="max-w-lg">
         <div className="flex flex-col gap-4">
-          <Field label="Cédula" required><input className="input-field" placeholder="0999999999" value={form.cedula} onChange={e => setForm({ ...form, cedula: e.target.value })} /></Field>
-          <Field label="Nombre" required><input className="input-field" placeholder="Juan Pérez" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></Field>
-          <Field label="Email"><input className="input-field" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></Field>
-          <Field label="Teléfono"><input className="input-field" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} /></Field>
-          <Field label="Contraseña" required><input className="input-field" type="password" placeholder="Mínimo 6 caracteres" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} /></Field>
-          <div className="flex gap-3">
+          <p className="text-xs font-bold opacity-50 uppercase tracking-wider">Información Básica</p>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Cédula" required>
+              <input className="input-field" placeholder="0000000000" value={form.cedula}
+                onChange={e => setForm({ ...form, cedula: e.target.value })} />
+            </Field>
+            <Field label="Nombre Completo" required>
+              <input className="input-field" placeholder="Juan Pérez" value={form.name}
+                onChange={e => setForm({ ...form, name: e.target.value })} />
+            </Field>
+            <Field label="Email">
+              <input className="input-field" type="email" placeholder="juan@email.com" value={form.email}
+                onChange={e => setForm({ ...form, email: e.target.value })} />
+            </Field>
+            <Field label="Teléfono">
+              <input className="input-field" placeholder="0999999999" value={form.phone}
+                onChange={e => setForm({ ...form, phone: e.target.value })} />
+            </Field>
+            <Field label="Fecha de Nacimiento">
+              <input className="input-field" type="date" value={form.birthDate}
+                onChange={e => setForm({ ...form, birthDate: e.target.value })} />
+            </Field>
+          </div>
+
+          <p className="text-xs font-bold opacity-50 uppercase tracking-wider">Contacto de Emergencia</p>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Nombre del Contacto">
+              <input className="input-field" placeholder="María Pérez" value={form.emergencyContactName}
+                onChange={e => setForm({ ...form, emergencyContactName: e.target.value })} />
+            </Field>
+            <Field label="Teléfono de Emergencia">
+              <input className="input-field" placeholder="0999999999" value={form.emergencyContactPhone}
+                onChange={e => setForm({ ...form, emergencyContactPhone: e.target.value })} />
+            </Field>
+          </div>
+
+          <p className="text-xs font-bold opacity-50 uppercase tracking-wider">Credenciales</p>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Contraseña" required>
+              <input className="input-field" type="password" placeholder="········" value={form.password}
+                onChange={e => setForm({ ...form, password: e.target.value })} />
+            </Field>
+            <Field label="Confirmar Contraseña" required>
+              <input className="input-field" type="password" placeholder="········" value={form.confirmPassword}
+                onChange={e => setForm({ ...form, confirmPassword: e.target.value })} />
+            </Field>
+          </div>
+
+          <div className="flex gap-3 mt-2">
             <button onClick={() => setShowCreate(false)} className="btn-secondary flex-1 text-sm">Cancelar</button>
             <button onClick={handleCreate} disabled={saving} className="btn-primary flex-1 text-sm flex items-center justify-center gap-2" style={{ backgroundColor: primaryColor }}>
               {saving && <Spinner size={14} className="text-white" />} Crear
@@ -266,18 +311,10 @@ export function ReceptionClientDetailPage() {
       </div>
 
       {/* Acciones */}
-      <div className="grid grid-cols-3 gap-3 mb-5">
-        <button onClick={() => setShowMem(true)} className="p-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all hover:opacity-80"
+      <div className="mb-5">
+        <button onClick={() => setShowMem(true)} className="w-full p-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all hover:opacity-80"
           style={{ background: '#1a1a1a', border: `1px solid rgba(255,255,255,0.08)` }}>
           <CreditCard size={16} /> Nueva Membresía
-        </button>
-        <button className="p-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all hover:opacity-80"
-          style={{ background: '#1a1a1a', border: `1px solid rgba(255,255,255,0.08)` }}>
-          💳 Registrar Pago
-        </button>
-        <button className="p-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all hover:opacity-80"
-          style={{ background: '#1a1a1a', border: `1px solid rgba(255,255,255,0.08)` }}>
-          <QrCode size={16} /> Ver QR
         </button>
       </div>
 
