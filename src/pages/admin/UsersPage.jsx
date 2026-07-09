@@ -373,7 +373,7 @@ const [newPassword, setNewPassword] = useState('');
                 <p className="text-xs opacity-50">Cédula: {selectedUser.user.cedula}</p>
                 {selectedUser.user.email && <p className="text-xs opacity-50">✉ {selectedUser.user.email}</p>}
                 {selectedUser.user.phone && <p className="text-xs opacity-50">📱 {selectedUser.user.phone}</p>}
-                {selectedUser.user.birth_date && <p className="text-xs opacity-50">🎂 {new Date(selectedUser.user.birth_date + 'T00:00:00').toLocaleDateString('es-EC')}</p>}
+                {selectedUser.user.birth_date && <p className="text-xs opacity-50">🎂 {new Date(selectedUser.user.birth_date.split('T')[0] + 'T00:00:00').toLocaleDateString('es-EC')}</p>}
                 {selectedUser.user.emergency_contact_name && (
                   <p className="text-xs opacity-50">🚨 {selectedUser.user.emergency_contact_name}{selectedUser.user.emergency_contact_phone ? ` — ${selectedUser.user.emergency_contact_phone}` : ''}</p>
                 )}

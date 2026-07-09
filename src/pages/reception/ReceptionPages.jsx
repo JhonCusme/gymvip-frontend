@@ -300,7 +300,7 @@ export function ReceptionClientDetailPage() {
             <p className="text-xs opacity-50">C.I.: {client.cedula}</p>
             {client.email && <p className="text-xs opacity-50">✉ {client.email}</p>}
             {client.phone && <p className="text-xs opacity-50">📱 {client.phone}</p>}
-            {client.birth_date && <p className="text-xs opacity-50">🎂 {new Date(client.birth_date + 'T00:00:00').toLocaleDateString('es-EC')}</p>}
+            {client.birth_date && <p className="text-xs opacity-50">🎂 {new Date(client.birth_date.split('T')[0] + 'T00:00:00').toLocaleDateString('es-EC')}</p>}
             {client.emergency_contact_name && (
               <p className="text-xs opacity-50">🚨 {client.emergency_contact_name}{client.emergency_contact_phone ? ` — ${client.emergency_contact_phone}` : ''}</p>
             )}
