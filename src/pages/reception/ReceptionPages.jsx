@@ -883,7 +883,7 @@ export function ReceptionAttendancePage() {
               { label: 'Total Ingresos', value: data.kpis?.total, color: 'bg-red-600' },
               { label: 'Usuarios Únicos', value: data.kpis?.unique_users, color: 'bg-blue-600' },
               { label: 'Membresías Válidas', value: data.kpis?.with_membership, color: 'bg-green-600' },
-              { label: 'Hora Pico', value: '--:--', color: 'bg-purple-600' },
+              { label: 'Hora Pico', value: data.kpis?.hora_pico || '--:--', color: 'bg-purple-600' },
             ].map((k, i) => (
               <div key={i} className="rounded-xl p-4 flex items-center gap-3" style={{ background: '#1a1a1a' }}>
                 <div className={`${k.color} p-2 rounded-lg`}>
@@ -922,7 +922,7 @@ export function ReceptionAttendancePage() {
                       <div key={dow} className="flex items-center gap-1 mb-1">
                         <span className="w-7 text-xs opacity-40 text-right">{day}</span>
                         {Array.from({ length: 24 }, (_, h) => {
-                          const count = data.heatmap?.find(d => d.day_of_week === dow && d.hour === h)?.count || 0;
+                          const count = data.heatmap?.find(d => d.dow === dow && d.hour === h)?.count || 0;
                           return <div key={h} className="w-6 h-5 rounded-sm"
                             style={{ backgroundColor: primaryColor, opacity: count === 0 ? 0.06 : Math.max(0.15, count / max) }} />;
                         })}
