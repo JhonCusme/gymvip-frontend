@@ -909,32 +909,46 @@ export function ReceptionAttendancePage() {
             </ResponsiveContainer>
           </div>
 
-          {/* Mapa de calor simplificado */}
+          {/* Mapa de calor */}
           <div className="rounded-xl p-5" style={{ background: '#1a1a1a' }}>
-            <p className="font-bold mb-2">Mapa de Calor — Horas más Concurridas</p>
-            <p className="text-xs opacity-30 mb-4">Intensidad de ingresos por día de semana y hora</p>
+            <p className="font-bold mb-4">Mapa de Calor — Horas más Concurridas</p>
+            <p className="text-xs opacity-40 mb-3">Intensidad de ingresos por día de semana y hora</p>
             {data.heatmap?.length > 0 ? (
-              <div className="overflow-x-auto">
-                <div className="min-w-max">
-                  {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((day, dow) => {
-                    const max = Math.max(...(data.heatmap?.map(d => d.count) || [1]));
-                    return (
-                      <div key={dow} className="flex items-center gap-1 mb-1">
-                        <span className="w-7 text-xs opacity-40 text-right">{day}</span>
-                        {Array.from({ length: 24 }, (_, h) => {
-                          const count = data.heatmap?.find(d => d.dow === dow && d.hour === h)?.count || 0;
-                          return <div key={h} className="w-6 h-5 rounded-sm"
-                            style={{ backgroundColor: primaryColor, opacity: count === 0 ? 0.06 : Math.max(0.15, count / max) }} />;
-                        })}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+              <ReceptionHeatMap data={data.heatmap} primaryColor={primaryColor} />
             ) : <p className="text-xs opacity-30 text-center py-6">Sin datos suficientes</p>}
           </div>
         </>
       )}
+    </div>
+  );
+}
+function ReceptionHeatMap({ data, primaryColor }) {
+  const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  const hours = Array.from({ length: 24 }, (_, i) => i);
+  const max = Math.max(...(data?.map(d => d.count) || [1]));
+  const getCell = (dow, hour) => data?.find(d => d.dow === dow && d.hour === hour)?.count || 0;
+
+  return (
+    <div className="overflow-x-auto">
+      <div className="min-w-max">
+        <div className="flex gap-1 mb-1 ml-8">
+          {hours.map(h => <span key={h} className="w-6 text-center text-xs opacity-30">{h.toString().padStart(2, '0')}</span>)}
+        </div>
+        {days.map((day, dow) => (
+          <div key={dow} className="flex items-center gap-1 mb-1">
+            <span className="w-7 text-xs opacity-40 text-right">{day}</span>
+            {hours.map(h => {
+              const count = getCell(dow, h);
+              const opacity = count === 0 ? 0.08 : Math.max(0.2, count / max);
+              return (
+                <div key={h} title={`${count} ingresos`}
+                  className="w-6 h-5 rounded-sm"
+                  style={{ backgroundColor: primaryColor, opacity }} />
+              );
+            })}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
