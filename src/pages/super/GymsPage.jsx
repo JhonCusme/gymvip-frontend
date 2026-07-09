@@ -414,14 +414,12 @@ const [expanded, setExpanded] = useState(false);
         </button>
 
         {expanded && (
-          <div className="space-y-1.5 mb-3">
-           <div className="flex items-center justify-between gap-2 bg-gray-50 rounded-lg px-3 py-1.5 mb-2">
-              <span className="text-xs text-gray-500 w-24 flex-shrink-0">Acceso gym</span>
+        <div className="space-y-1.5 mb-3">
+            <div className="flex items-center justify-between gap-2 bg-gray-50 rounded-lg px-3 py-1.5">
+              <span className="text-xs text-gray-500 w-28 flex-shrink-0">Acceso gym</span>
               <span className="text-xs text-blue-600 truncate flex-1">{`${window.location.origin}/login?gym=${gym.slug}`}</span>
-              <button
-                onClick={() => copyText(`${window.location.origin}/login?gym=${gym.slug}`, 'acceso')}
-                className="text-gray-400 hover:text-gray-700 transition-colors flex-shrink-0"
-              >
+              <button onClick={() => copyText(`${window.location.origin}/login?gym=${gym.slug}`, 'acceso')}
+                className="text-gray-400 hover:text-gray-700 transition-colors flex-shrink-0">
                 {copied === 'acceso' ? <Check size={13} className="text-green-500" /> : <Copy size={13} />}
               </button>
             </div>
@@ -430,8 +428,7 @@ const [expanded, setExpanded] = useState(false);
             <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide mt-2 mb-1">Configuración PayPhone</p>
             {[
               { label: 'Dominio web', url: appUrl },
-              { label: 'URL respuesta', url: `${appUrl}/usuario/payment-result` },
-              { label: 'URL notificación', url: `${appUrl.replace('http://localhost:5173', 'http://localhost:3001')}/api/payments/payphone/notify` },
+              { label: 'URL respuesta', url: `${appUrl}/usuario/payment-result?gym=${gym.slug}` },
             ].map((item) => (
               <div key={item.label} className="flex items-center justify-between gap-2 bg-blue-50 rounded-lg px-3 py-1.5">
                 <span className="text-xs text-blue-600 w-28 flex-shrink-0">{item.label}</span>
