@@ -156,6 +156,7 @@ export const receptionAPI = {
   getEnrolled: (classId) => api.get(`/recepcion/schedules/${classId}/enrolled`),
   validateEntry: (data) => api.post('/recepcion/scanner/validate', data),
   getAttendance: (params) => api.get('/recepcion/attendance', { params }),
+  getMembershipTypes: () => api.get('/recepcion/membership-types'),
 };
 
 // ============================================================

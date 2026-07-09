@@ -211,7 +211,7 @@ export function ReceptionClientDetailPage() {
     try {
       const [r, adminTypes] = await Promise.all([
         receptionAPI.getClient(clientId),
-        adminAPI.getMembershipTypes()
+        receptionAPI.getMembershipTypes()
       ]);
       setData(r.data);
       setMemTypes(adminTypes.data);
