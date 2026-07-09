@@ -2,8 +2,8 @@
 // REPORTE GLOBAL
 // ============================================================
 import { useState, useEffect } from 'react';
-import { superAPI } from '../../api';
-import { KPICard, PageHeader, PageLoader } from '../../components/ui';
+import api, { superAPI } from '../../api';
+import { KPICard, PageHeader, PageLoader, Spinner } from '../../components/ui';
 import { Building2, Users, CreditCard, DollarSign, RefreshCw } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import toast from 'react-hot-toast';
@@ -242,7 +242,27 @@ export function SuperBackupPage() {
 export function SuperSettingsPage() {
   const [tab, setTab] = useState('perfil');
   const [form, setForm] = useState({ name: 'Super Administrador', cedula: '9999999999', email: '', phone: '' });
-  const [passForm, setPassForm] = useState({ current: '', new: '', confirm: '' });
+  const [passForm, setPassForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [savingPass, setSavingPass] = useState(false);
+
+  const handleChangePassword = async () => {
+    if (!passForm.currentPassword || !passForm.newPassword) return toast.error('Completa todos los campos');
+    if (passForm.newPassword !== passForm.confirmPassword) return toast.error('Las contraseñas no coinciden');
+    if (passForm.newPassword.length < 6) return toast.error('Mínimo 6 caracteres');
+    setSavingPass(true);
+    try {
+      await api.post('/auth/change-password', {
+        currentPassword: passForm.currentPassword,
+        newPassword: passForm.newPassword
+      });
+      toast.success('Contraseña actualizada exitosamente');
+      setPassForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Error al cambiar contraseña');
+    } finally {
+      setSavingPass(false);
+    }
+  };
 
   return (
     <div className="fade-in max-w-3xl">
@@ -288,10 +308,20 @@ export function SuperSettingsPage() {
             <div>
               <h3 className="font-bold text-gray-900 mb-5">Cambiar Contraseña</h3>
               <div className="flex flex-col gap-4">
-                <div><label className="text-xs text-gray-500 font-semibold block mb-1">Contraseña Actual</label><input className="input-field" type="password" /></div>
-                <div><label className="text-xs text-gray-500 font-semibold block mb-1">Nueva Contraseña</label><input className="input-field" type="password" /></div>
-                <div><label className="text-xs text-gray-500 font-semibold block mb-1">Confirmar Nueva Contraseña</label><input className="input-field" type="password" /></div>
-                <button className="btn-primary text-sm self-start px-6" style={{ backgroundColor: '#DC2626' }}>Cambiar Contraseña</button>
+                <div><label className="text-xs text-gray-500 font-semibold block mb-1">Contraseña Actual</label>
+                  <input className="input-field" type="password" value={passForm.currentPassword}
+                    onChange={e => setPassForm({ ...passForm, currentPassword: e.target.value })} /></div>
+                <div><label className="text-xs text-gray-500 font-semibold block mb-1">Nueva Contraseña</label>
+                  <input className="input-field" type="password" value={passForm.newPassword}
+                    onChange={e => setPassForm({ ...passForm, newPassword: e.target.value })} /></div>
+                <div><label className="text-xs text-gray-500 font-semibold block mb-1">Confirmar Nueva Contraseña</label>
+                  <input className="input-field" type="password" value={passForm.confirmPassword}
+                    onChange={e => setPassForm({ ...passForm, confirmPassword: e.target.value })} /></div>
+                <button onClick={handleChangePassword} disabled={savingPass}
+                  className="btn-primary text-sm self-start px-6 flex items-center gap-2" style={{ backgroundColor: '#DC2626' }}>
+                  {savingPass && <Spinner size={14} className="text-white" />}
+                  Cambiar Contraseña
+                </button>
               </div>
             </div>
           )}
