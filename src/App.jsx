@@ -20,7 +20,7 @@ import AdminDashboardPage from './pages/admin/DashboardPage';
 import AdminUsersPage from './pages/admin/UsersPage';
 import { AdminSessionsPage, AdminSchedulesPage, AdminInstructorsPage, AdminReceptionistsPage } from './pages/admin/AdminSubPages';
 import { AdminPaymentsPage, AdminReportsPage, AdminValidateEntryPage, AdminAttendancePage, AdminAuditPage } from './pages/admin/AdminReportPages';
-import { AdminMembershipsPage, AdminSettingsPage } from './pages/admin/AdminSettingsPages';
+import { AdminMembershipsPage, AdminActiveMembershipsPage, AdminSettingsPage } from './pages/admin/AdminSettingsPages';
 import WodPage from './pages/admin/WodPage';
 
 // Recepción
