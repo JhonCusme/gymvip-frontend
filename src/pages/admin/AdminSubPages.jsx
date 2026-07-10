@@ -781,4 +781,102 @@ const [savingMemR, setSavingMemR] = useState(false);
     </div>
   );
 }
+// ============================================================
+// MEMBRESÍAS ACTIVAS (vista central con colores de vencimiento)
+// ============================================================
+export function AdminActiveMembershipsPage() {
+  const { gym } = useAuth();
+  const primaryColor = gym?.primaryColor || '#E85D04';
+  const [memberships, setMemberships] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    setLoading(true);
+    adminAPI.getMemberships({ filter })
+      .then(r => setMemberships(r.data))
+      .catch(() => toast.error('Error al cargar membresías'))
+      .finally(() => setLoading(false));
+  }, [filter]);
+
+  const getDaysInfo = (endDate) => {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const end = new Date(endDate.split('T')[0] + 'T00:00:00');
+    const diffDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+    if (diffDays < 0) return { label: 'Vencida', color: 'text-gray-400', bg: 'bg-gray-500/20', days: diffDays };
+    if (diffDays <= 2) return { label: `${diffDays}d`, color: 'text-red-400', bg: 'bg-red-500/20', days: diffDays };
+    if (diffDays <= 5) return { label: `${diffDays}d`, color: 'text-yellow-400', bg: 'bg-yellow-500/20', days: diffDays };
+    return { label: `${diffDays}d`, color: 'text-green-400', bg: 'bg-green-500/20', days: diffDays };
+  };
+
+  const filtered = memberships.filter(m =>
+    !search || m.client_name?.toLowerCase().includes(search.toLowerCase()) || m.client_cedula?.includes(search)
+  );
+
+  return (
+    <div className="fade-in">
+      <PageHeader title="Membresías" />
+
+      <input
+        type="text"
+        placeholder="🔍 Buscar por nombre o cédula..."
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        className="w-full mb-4 px-4 py-2.5 rounded-xl text-sm outline-none"
+        style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.08)', color: '#fff' }}
+      />
+
+      <div className="flex gap-2 mb-4 flex-wrap">
+        {[['all', 'Todas'], ['active', 'Activas'], ['expiring', '⚠ Por vencer'], ['expired', 'Vencidas']].map(([v, l]) => (
+          <button key={v} onClick={() => setFilter(v)}
+            className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+            style={filter === v ? { backgroundColor: primaryColor, color: '#fff' } : { background: '#1a1a1a', opacity: 0.5 }}>
+            {l}
+          </button>
+        ))}
+      </div>
+
+      <div className="rounded-xl overflow-hidden" style={{ background: '#1a1a1a' }}>
+        {loading ? <div className="flex justify-center py-16"><Spinner size={28} className="opacity-30" /></div>
+          : filtered.length === 0 ? <EmptyState icon={CreditCard} title="No hay membresías" />
+          : (
+            <table className="data-table">
+              <thead><tr><th>Cliente</th><th>Tipo</th><th>Vencimiento</th><th>Restante</th><th>Tipo pago</th><th>Estado</th></tr></thead>
+              <tbody>
+                {filtered.map(m => {
+                  const info = getDaysInfo(m.end_date);
+                  return (
+                    <tr key={m.id} className="hover:bg-white/3 transition-colors">
+                      <td>
+                        <p className="font-semibold text-sm">{m.client_name}</p>
+                        <p className="text-xs opacity-40">{m.client_cedula}</p>
+                      </td>
+                      <td className="text-sm">{m.type_name}</td>
+                      <td className="text-xs opacity-60">{new Date(m.end_date.split('T')[0] + 'T00:00:00').toLocaleDateString('es-EC')}</td>
+                      <td>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${info.color} ${info.bg}`}>
+                          {info.label}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${m.is_paid ? 'bg-emerald-500/20 text-emerald-400' : 'bg-pink-500/20 text-pink-400'}`}>
+                          {m.is_paid ? 'Pago' : 'Beca'}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={m.status === 'active' && info.days >= 0 ? 'badge-active' : 'badge-inactive'}>
+                          {m.status === 'active' && info.days >= 0 ? 'Activa' : 'Vencida'}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+      </div>
+    </div>
+  );
+}
 

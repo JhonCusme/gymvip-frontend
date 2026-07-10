@@ -79,6 +79,7 @@ function AppRoutes() {
         <Route index element={<AdminDashboardPage />} />
         <Route path="users" element={<AdminUsersPage />} />
         <Route path="memberships" element={<AdminMembershipsPage />} />
+        <Route path="active-memberships" element={<AdminActiveMembershipsPage />} />
         <Route path="sessions" element={<AdminSessionsPage />} />
         <Route path="workouts" element={<WodPage />} />
         <Route path="schedules" element={<AdminSchedulesPage />} />
