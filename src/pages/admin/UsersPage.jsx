@@ -330,7 +330,8 @@ const [newPassword, setNewPassword] = useState('');
                 <option value="efectivo">Efectivo</option>
                 <option value="transferencia">Transferencia</option>
                 <option value="tarjeta">Tarjeta</option>
-                <option value="payphone">PayPhone</option>
+                <option value="cortesia">Cortesía</option>
+                <option value="beca">Beca</option>
               </select>
             </Field>
             <Field label="Monto Recibido ($)" required>

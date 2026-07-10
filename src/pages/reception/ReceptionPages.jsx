@@ -376,13 +376,15 @@ export function ReceptionClientDetailPage() {
             </select>
           </Field>
           <Field label="Método de Pago" required>
-            <select className="input-field" value={memForm.method}
-              onChange={e => setMemForm({ ...memForm, method: e.target.value })}>
-              <option value="efectivo">Efectivo</option>
-              <option value="transferencia">Transferencia</option>
-              <option value="tarjeta">Tarjeta</option>
-            </select>
-          </Field>
+              <select className="input-field" value={memForm.method}
+                onChange={e => setMemForm({ ...memForm, method: e.target.value })}>
+                <option value="efectivo">Efectivo</option>
+                <option value="transferencia">Transferencia</option>
+                <option value="tarjeta">Tarjeta</option>
+                <option value="cortesia">Cortesía</option>
+                <option value="beca">Beca</option>
+              </select>
+            </Field>
           <div className="flex gap-3">
             <button onClick={() => setShowMem(false)} className="btn-secondary flex-1 text-sm">Cancelar</button>
             <button onClick={handleMembership} disabled={saving}
