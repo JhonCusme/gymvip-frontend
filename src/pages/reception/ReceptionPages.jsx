@@ -443,7 +443,7 @@ export function ReceptionMembershipsPage() {
       />
 
       <div className="flex gap-2 mb-4 flex-wrap">
-        {[['all', 'Todas'], ['active', 'Activas'], ['expired', 'Vencidas']].map(([v, l]) => (
+        {[['all', 'Todas'], ['active', 'Activas'], ['expiring', '⚠ Por vencer'], ['expired', 'Vencidas']].map(([v, l]) => (
           <button key={v} onClick={() => setFilter(v)}
             className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
             style={filter === v ? { backgroundColor: '#E85D04', color: '#fff' } : { background: '#1a1a1a', opacity: 0.5 }}>
