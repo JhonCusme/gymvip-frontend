@@ -535,7 +535,6 @@ export function UserBookingsPage() {
   const primaryColor = gym?.primaryColor || '#E85D04';
   const [data, setData] = useState({ upcoming: [], past: [], cancelled: [] });
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState('upcoming');
 
   useEffect(() => {
     userAPI.getMyBookings()
@@ -544,29 +543,35 @@ export function UserBookingsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const tabData = { upcoming: 'Clases por recibir', past: 'Clases ya recibidas', cancelled: 'Clases canceladas' };
-  const current = data[tab] || [];
+  const tabData = { upcoming: 'Próximas clases', past: 'Clases pasadas', cancelled: 'Clases canceladas' };
+
+  const getBadge = (b, key) => {
+    if (key === 'cancelled') return <span className="badge-inactive">Cancelada</span>;
+    if (key === 'upcoming') return <span className="badge-active">Confirmada</span>;
+    // Clases pasadas: mostrar si asistió o no
+    return b.attended
+      ? <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-green-500/20 text-green-400">✓ Asistió</span>
+      : <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-500/20 text-red-400">✗ No asistió</span>;
+  };
 
   return (
     <UserLayout title="Mis Reservas" showBack>
-      <div className="relative mb-4">
-        <input className="input-field pl-9" placeholder="Buscar por clase o instructor" />
-        <svg className="absolute left-3 top-1/2 -translate-y-1/2 opacity-30" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      </div>
-
       {loading ? <div className="flex justify-center py-16"><Spinner size={24} className="opacity-30" /></div> : (
         Object.keys(tabData).map(key => (
-          <div key={key} className="mb-4">
+          <div key={key} className="mb-5">
             <p className="font-bold text-sm mb-2">{tabData[key]}</p>
             {data[key]?.length === 0
-              ? <p className="text-xs opacity-30 ml-1">No tienes {key === 'upcoming' ? 'reservas activas' : key === 'past' ? 'clases recibidas' : 'clases canceladas'}.</p>
+              ? <p className="text-xs opacity-30 ml-1">No tienes {key === 'upcoming' ? 'reservas próximas' : key === 'past' ? 'clases pasadas' : 'clases canceladas'}.</p>
               : data[key]?.map(b => (
                 <div key={b.id} className="flex items-center justify-between p-3 rounded-xl mb-1.5" style={{ background: '#1a1a1a' }}>
                   <div>
                     <p className="font-semibold text-sm">{b.session_name}</p>
-                    <p className="text-xs opacity-40">{new Date(b.class_date).toLocaleDateString('es-EC')} · {b.start_time?.slice(0,5)}</p>
+                    <p className="text-xs opacity-40">
+                      {new Date(b.class_date.split('T')[0] + 'T00:00:00').toLocaleDateString('es-EC')} · {b.start_time?.slice(0,5)}
+                    </p>
+                    {b.instructor_name && <p className="text-xs opacity-30">👤 {b.instructor_name}</p>}
                   </div>
-                  <span className={b.status === 'confirmed' ? 'badge-active' : b.status === 'attended' ? 'badge-info' : 'badge-inactive'}>{b.status}</span>
+                  {getBadge(b, key)}
                 </div>
               ))
             }
