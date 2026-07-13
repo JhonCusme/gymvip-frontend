@@ -144,6 +144,17 @@ export function InstructorTodayPage() {
 
   if (loading) return <PageLoader />;
 
+  // Ventana para tomar asistencia: desde el inicio de la clase hasta 1 hora después
+  const canTakeAttendance = (cls) => {
+    if (!cls.start_time) return false;
+    const now = new Date();
+    const [h, m] = cls.start_time.split(':').map(Number);
+    const start = new Date();
+    start.setHours(h, m, 0, 0);
+    const limit = new Date(start.getTime() + 60 * 60 * 1000); // +1 hora
+    return now >= start && now <= limit;
+  };
+
   return (
     <div className="fade-in">
       {/* Banner */}
@@ -198,11 +209,18 @@ export function InstructorTodayPage() {
                 </div>
                 <span className={cls.status === 'completed' ? 'badge-active' : 'badge-info'}>{cls.status}</span>
               </div>
-              <button onClick={() => openAttendance(cls)}
-                className="w-full mt-3 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-80"
-                style={{ backgroundColor: primaryColor }}>
-                ✓ Tomar Asistencia
-              </button>
+              {canTakeAttendance(cls) ? (
+                <button onClick={() => openAttendance(cls)}
+                  className="w-full mt-3 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-80"
+                  style={{ backgroundColor: primaryColor }}>
+                  ✓ Tomar Asistencia
+                </button>
+              ) : (
+                <p className="w-full mt-3 py-2 rounded-lg text-xs text-center opacity-30"
+                  style={{ background: 'rgba(255,255,255,0.04)' }}>
+                  🕐 Asistencia disponible durante la primera hora de clase
+                </p>
+              )}
             </div>
           ))}
         </div>
