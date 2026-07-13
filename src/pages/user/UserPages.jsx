@@ -548,10 +548,12 @@ export function UserBookingsPage() {
   const getBadge = (b, key) => {
     if (key === 'cancelled') return <span className="badge-inactive">Cancelada</span>;
     if (key === 'upcoming') return <span className="badge-active">Confirmada</span>;
-    // Clases pasadas: mostrar si asistió o no
-    return b.attended
-      ? <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-green-500/20 text-green-400">✓ Asistió</span>
-      : <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-500/20 text-red-400">✗ No asistió</span>;
+    // Clases pasadas: según lo que marcó el coach
+    if (b.status === 'attended')
+      return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-green-500/20 text-green-400">✓ Asististe</span>;
+    if (b.status === 'no_show')
+      return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-500/20 text-red-400">✗ No asististe</span>;
+    return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-gray-500/20 text-gray-400">Sin registrar</span>;
   };
 
   return (
