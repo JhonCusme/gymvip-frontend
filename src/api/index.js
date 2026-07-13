@@ -197,6 +197,8 @@ export const instructorAPI = {
   getWod: (date) => api.get(`/admin/wods/${date}`),
   saveWod: (data) => api.post('/admin/wods', data),
   deleteWod: (date) => api.delete(`/admin/wods/${date}`),
+  getClassStudents: (classInstanceId) => api.get(`/instructor/classes/${classInstanceId}/students`),
+  markAttendance: (bookingId, attended) => api.post(`/instructor/bookings/${bookingId}/attendance`, { attended }),
 };
 
 export default api;

@@ -103,6 +103,9 @@ export function InstructorTodayPage() {
   const primaryColor = gym?.primaryColor || '#E85D04';
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [attendanceClass, setAttendanceClass] = useState(null);
+  const [students, setStudents] = useState([]);
+  const [loadingStudents, setLoadingStudents] = useState(false);
 
   useEffect(() => {
     instructorAPI.getTodayClasses()
@@ -110,6 +113,34 @@ export function InstructorTodayPage() {
       .catch(() => toast.error('Error al cargar'))
       .finally(() => setLoading(false));
   }, []);
+
+  const openAttendance = async (cls) => {
+    setAttendanceClass(cls);
+    setLoadingStudents(true);
+    try {
+      const r = await instructorAPI.getClassStudents(cls.id);
+      setStudents(r.data.students);
+    } catch { toast.error('Error al cargar alumnos'); }
+    finally { setLoadingStudents(false); }
+  };
+
+  const handleMark = async (bookingId, attended) => {
+    try {
+      await instructorAPI.markAttendance(bookingId, attended);
+      setStudents(prev => prev.map(s => 
+        s.booking_id === bookingId ? { ...s, status: attended ? 'attended' : 'no_show' } : s
+      ));
+      toast.success(attended ? 'Asistencia marcada' : 'Marcado como ausente');
+    } catch { toast.error('Error al marcar asistencia'); }
+  };
+
+  // Verifica si hoy es el cumpleaños del alumno
+  const isBirthday = (birthDate) => {
+    if (!birthDate) return false;
+    const today = new Date();
+    const bd = new Date(birthDate.split('T')[0] + 'T00:00:00');
+    return bd.getDate() === today.getDate() && bd.getMonth() === today.getMonth();
+  };
 
   if (loading) return <PageLoader />;
 
@@ -167,6 +198,11 @@ export function InstructorTodayPage() {
                 </div>
                 <span className={cls.status === 'completed' ? 'badge-active' : 'badge-info'}>{cls.status}</span>
               </div>
+              <button onClick={() => openAttendance(cls)}
+                className="w-full mt-3 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-80"
+                style={{ backgroundColor: primaryColor }}>
+                ✓ Tomar Asistencia
+              </button>
             </div>
           ))}
         </div>
@@ -188,6 +224,61 @@ export function InstructorTodayPage() {
           ))}
         </div>
       </div>
+      {/* Modal Tomar Asistencia */}
+      <Modal open={!!attendanceClass} onClose={() => { setAttendanceClass(null); setStudents([]); }}
+        title={`Asistencia — ${attendanceClass?.session_name || ''}`} maxWidth="max-w-lg">
+        {attendanceClass && (
+          <div className="flex flex-col gap-3">
+            <p className="text-xs opacity-50">
+              🕐 {attendanceClass.start_time?.slice(0,5)} - {attendanceClass.end_time?.slice(0,5)} · {students.length} inscritos
+            </p>
+
+            {loadingStudents ? (
+              <div className="flex justify-center py-10"><Spinner size={24} className="opacity-30" /></div>
+            ) : students.length === 0 ? (
+              <p className="text-center text-sm opacity-30 py-8">No hay alumnos inscritos en esta clase</p>
+            ) : (
+              <div className="flex flex-col gap-2 max-h-96 overflow-y-auto">
+                {students.map(s => (
+                  <div key={s.booking_id} className="flex items-center justify-between p-3 rounded-xl"
+                    style={{ background: 'rgba(255,255,255,0.04)' }}>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm flex items-center gap-1.5">
+                        {s.name}
+                        {isBirthday(s.birth_date) && (
+                          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-pink-500/20 text-pink-400">
+                            🎂 ¡Cumple hoy!
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-xs opacity-40">{s.cedula}</p>
+                    </div>
+                    <div className="flex gap-1.5 flex-shrink-0">
+                      <button onClick={() => handleMark(s.booking_id, true)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                          s.status === 'attended' ? 'bg-green-500 text-white' : 'bg-white/10 opacity-50 hover:opacity-100'
+                        }`}>
+                        ✓ Asistió
+                      </button>
+                      <button onClick={() => handleMark(s.booking_id, false)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                          s.status === 'no_show' ? 'bg-red-500 text-white' : 'bg-white/10 opacity-50 hover:opacity-100'
+                        }`}>
+                        ✗ Ausente
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <button onClick={() => { setAttendanceClass(null); setStudents([]); }}
+              className="btn-secondary w-full text-sm mt-2">
+              Cerrar
+            </button>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
