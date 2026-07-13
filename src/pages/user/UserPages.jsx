@@ -243,7 +243,10 @@ export function UserSchedulePage() {
   const [hasMembership, setHasMembership] = useState(false);
   const [loading, setLoading] = useState(false);
   const [dates, setDates] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  });
   const [booking, setBooking] = useState(null);
 
   // Generar días según los que permite agendar el gym
@@ -290,6 +293,13 @@ export function UserSchedulePage() {
 
   return (
     <UserLayout title="Horarios">
+      {/* Aviso si no tiene membresía activa */}
+      {!hasMembership && !loading && (
+        <div className="rounded-2xl p-4 mb-4 border border-red-500/40" style={{ background: 'rgba(220,38,38,0.12)' }}>
+          <p className="font-bold text-red-400 mb-1">⚠ No puedes reservar clases</p>
+          <p className="text-xs opacity-70">Necesitas una membresía activa para agendar. Renueva tu membresía desde el inicio.</p>
+        </div>
+      )}
       {/* Selector de fecha */}
       <div className="flex gap-2 overflow-x-auto pb-2 mb-5 -mx-4 px-4">
         {dates.map(d => (
@@ -317,8 +327,8 @@ export function UserSchedulePage() {
             const free = cls.max_capacity - booked;
             return (
               <div key={cls.id} onClick={() => !cls.is_booked && free > 0 && hasMembership && handleBook(cls.id)}
-                className="flex items-center justify-between p-4 rounded-xl mb-2 cursor-pointer transition-all hover:opacity-80"
-                style={{ background: '#1a1a1a' }}>
+                className={`flex items-center justify-between p-4 rounded-xl mb-2 transition-all ${hasMembership && !cls.is_booked && free > 0 ? 'cursor-pointer hover:opacity-80' : 'cursor-not-allowed'}`}
+                style={{ background: '#1a1a1a', opacity: hasMembership ? 1 : 0.5 }}>
                 <div className="flex items-center gap-4">
                   <div className="text-right w-12">
                     <p className="text-lg font-black">{cls.start_time?.slice(0,5)}</p>
