@@ -310,7 +310,7 @@ export function ReceptionClientDetailPage() {
           <span className={`px-3 py-1 rounded-full text-sm font-bold ${hasActiveMem ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
             {hasActiveMem ? 'Membresía Activa' : 'Sin Membresía'}
           </span>
-          {hasActiveMem && <p className="text-xs opacity-40 mt-1">Vence: {new Date(membership.end_date).toLocaleDateString('es-EC')}</p>}
+          {hasActiveMem && <p className="text-xs opacity-40 mt-1">Vence: {new Date(membership.end_date.split('T')[0] + 'T00:00:00').toLocaleDateString('es-EC')}</p>}
         </div>
       </div>
 
@@ -335,7 +335,7 @@ export function ReceptionClientDetailPage() {
                 <span className="badge-active">Activa</span>
               </div>
               <p className="text-xs opacity-40 mt-1">
-                {new Date(membership.start_date).toLocaleDateString('es-EC')} — {new Date(membership.end_date).toLocaleDateString('es-EC')}
+                {new Date(membership.start_date.split('T')[0] + 'T00:00:00').toLocaleDateString('es-EC')} — {new Date(membership.end_date.split('T')[0] + 'T00:00:00').toLocaleDateString('es-EC')}
               </p>
             </div>
           )}
