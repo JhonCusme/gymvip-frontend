@@ -290,6 +290,18 @@ export function UserSchedulePage() {
     finally { setBooking(null); }
   };
 
+  // Verifica si la clase ya pasó (solo aplica para el día de hoy)
+  const isClassPast = (cls) => {
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    // Solo filtrar si es el día de hoy
+    if (selectedDate !== todayStr) return false;
+    const [h, m] = cls.start_time.split(':').map(Number);
+    const classStart = new Date();
+    classStart.setHours(h, m, 0, 0);
+    return now > classStart;
+  };
+
   return (
     <UserLayout title="Horarios">
       {/* Aviso si no tiene membresía activa */}
@@ -319,9 +331,9 @@ export function UserSchedulePage() {
       </p>
 
       {loading ? <div className="flex justify-center py-16"><Spinner size={28} className="opacity-30" /></div>
-        : classes.length === 0
+        : classes.filter(c => !isClassPast(c)).length === 0
           ? <p className="text-center text-sm opacity-30 py-12">No hay clases disponibles este día</p>
-          : classes.map(cls => {
+          : classes.filter(c => !isClassPast(c)).map(cls => {
             const booked = parseInt(cls.booked_count);
             const free = cls.max_capacity - booked;
             return (
