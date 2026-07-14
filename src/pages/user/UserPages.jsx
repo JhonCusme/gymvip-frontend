@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { userAPI, wodAPI } from '../../api';
+import api, { userAPI, wodAPI } from '../../api';
 import { Spinner, Modal, Field } from '../../components/ui';
 import { Home, Calendar, QrCode, User, ChevronRight, Dumbbell, Clock, CreditCard, Bell, Lock, HelpCircle, LogOut, ArrowLeft, X, Check } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -93,7 +93,6 @@ export function UserHomePage() {
     { icon: QrCode, label: 'Mi QR', to: '/usuario/qr' },
     { icon: Clock, label: 'Mis Clases', to: '/usuario/bookings' },
     { icon: Dumbbell, label: 'WOD Hoy', to: '/usuario/wod' },
-    { icon: Dumbbell, label: 'Entrenamiento', to: '/usuario/training' },
   ];
 
   return (
@@ -422,8 +421,6 @@ export function UserProfilePage() {
   const menuItems = [
     { icon: User, label: 'Editar Perfil', to: '/usuario/edit-profile' },
     { icon: Calendar, label: 'Mis Reservas', to: '/usuario/bookings' },
-    { icon: Dumbbell, label: 'Mi Entrenamiento', to: '/usuario/training' },
-    { icon: Clock, label: 'Historial de Entrenamientos', to: '/usuario/training-history' },
     { icon: CreditCard, label: 'Historial de Pagos', to: '/usuario/payment-history' },
     { icon: Bell, label: 'Notificaciones', to: '/usuario/notifications' },
     { icon: Lock, label: 'Cambiar Contraseña', to: '/usuario/change-password' },
@@ -734,6 +731,70 @@ export function UserWodPage() {
           )}
         </div>
       )}
+    </UserLayout>
+  );
+}
+
+// ============================================================
+// CAMBIAR CONTRASEÑA — USUARIO
+// ============================================================
+export function UserChangePasswordPage() {
+  const { gym } = useAuth();
+  const primaryColor = gym?.primaryColor || '#E85D04';
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!form.currentPassword || !form.newPassword) return toast.error('Completa todos los campos');
+    if (form.newPassword !== form.confirmPassword) return toast.error('Las contraseñas no coinciden');
+    if (form.newPassword.length < 6) return toast.error('La nueva contraseña debe tener al menos 6 caracteres');
+    setSaving(true);
+    try {
+      await api.post('/auth/change-password', {
+        currentPassword: form.currentPassword,
+        newPassword: form.newPassword
+      });
+      toast.success('Contraseña actualizada exitosamente');
+      setForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      navigate('/usuario/profile');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Error al cambiar la contraseña');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <UserLayout title="Cambiar Contraseña" showBack>
+      <div className="rounded-2xl p-5" style={{ background: '#1a1a1a' }}>
+        <div className="flex flex-col gap-4">
+          <div>
+            <label className="text-xs opacity-50 block mb-1.5">Contraseña Actual</label>
+            <input type="password" className="input-field" placeholder="••••••••"
+              value={form.currentPassword}
+              onChange={e => setForm({ ...form, currentPassword: e.target.value })} />
+          </div>
+          <div>
+            <label className="text-xs opacity-50 block mb-1.5">Nueva Contraseña</label>
+            <input type="password" className="input-field" placeholder="Mínimo 6 caracteres"
+              value={form.newPassword}
+              onChange={e => setForm({ ...form, newPassword: e.target.value })} />
+          </div>
+          <div>
+            <label className="text-xs opacity-50 block mb-1.5">Confirmar Nueva Contraseña</label>
+            <input type="password" className="input-field" placeholder="••••••••"
+              value={form.confirmPassword}
+              onChange={e => setForm({ ...form, confirmPassword: e.target.value })} />
+          </div>
+          <button onClick={handleSubmit} disabled={saving}
+            className="w-full py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2 mt-2"
+            style={{ backgroundColor: primaryColor }}>
+            {saving && <Spinner size={16} className="text-white" />}
+            Cambiar Contraseña
+          </button>
+        </div>
+      </div>
     </UserLayout>
   );
 }

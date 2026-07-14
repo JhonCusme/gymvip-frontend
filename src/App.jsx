@@ -29,7 +29,7 @@ import { ReceptionDashboardPage, ReceptionClientsPage, ReceptionClientDetailPage
 // Instructor
 import { InstructorTodayPage, InstructorRoutinesPage, InstructorAttendancePage, InstructorProfilePage, InstructorWodPage } from './pages/instructor/InstructorPages';
 // Usuario
-import { UserHomePage, UserSchedulePage, UserQRPage, UserProfilePage, UserEditProfilePage, UserBookingsPage, UserPaymentHistoryPage, UserNotificationsPage, UserWodPage } from './pages/user/UserPages';
+import { UserHomePage, UserSchedulePage, UserQRPage, UserProfilePage, UserEditProfilePage, UserBookingsPage, UserPaymentHistoryPage, UserNotificationsPage, UserWodPage, UserChangePasswordPage } from './pages/user/UserPages';
 import { UserPayphonePage, UserPaymentResultPage, UserAutoChargePage } from './pages/user/PayphonePages';
 
 const Placeholder = ({ label }) => <div className="flex items-center justify-center h-64 opacity-30 text-sm">{label}</div>;
@@ -124,11 +124,11 @@ function AppRoutes() {
         <Route path="qr" element={<UserQRPage />} />
         <Route path="profile" element={<UserProfilePage />} />
         <Route path="edit-profile" element={<UserEditProfilePage />} />
+        <Route path="change-password" element={<UserChangePasswordPage />} />
         <Route path="bookings" element={<UserBookingsPage />} />
         <Route path="payment-history" element={<UserPaymentHistoryPage />} />
         <Route path="notifications" element={<UserNotificationsPage />} />
         <Route path="wod" element={<UserWodPage />} />
-        <Route path="training" element={<Placeholder label="Mi Entrenamiento" />} />
         <Route path="payphone" element={<UserPayphonePage />} />
         <Route path="payment-result" element={<UserPaymentResultPage />} />
         <Route path="auto-charge" element={<UserAutoChargePage />} />
