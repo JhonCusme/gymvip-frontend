@@ -791,6 +791,7 @@ export function AdminActiveMembershipsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
+  const [cancelling, setCancelling] = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -813,6 +814,24 @@ export function AdminActiveMembershipsPage() {
   const filtered = memberships.filter(m =>
     !search || m.client_name?.toLowerCase().includes(search.toLowerCase()) || m.client_cedula?.includes(search)
   );
+
+  const handleCancel = async (m) => {
+    const isPayphone = m.is_paid; // asumimos que si es pago puede ser payphone
+    const msg = `¿Anular la membresía de ${m.client_name}?\n\nEsto la marcará como cancelada y anulará el pago asociado.\n\nSi fue pagada con PayPhone, se intentará el reembolso (solo válido el mismo día hasta las 20:00).`;
+    if (!window.confirm(msg)) return;
+    setCancelling(m.id);
+    try {
+      const r = await adminAPI.cancelMembership(m.id);
+      toast.success(r.data.refunded ? 'Membresía anulada y pago reembolsado' : 'Membresía anulada');
+      // recargar
+      const res = await adminAPI.getMemberships({ filter });
+      setMemberships(res.data);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Error al anular');
+    } finally {
+      setCancelling(null);
+    }
+  };
 
   return (
     <div className="fade-in">
@@ -842,7 +861,7 @@ export function AdminActiveMembershipsPage() {
           : filtered.length === 0 ? <EmptyState icon={CreditCard} title="No hay membresías" />
           : (
             <table className="data-table">
-              <thead><tr><th>Cliente</th><th>Tipo</th><th>Vencimiento</th><th>Restante</th><th>Tipo pago</th><th>Estado</th></tr></thead>
+              <thead><tr><th>Cliente</th><th>Tipo</th><th>Vencimiento</th><th>Restante</th><th>Tipo pago</th><th>Estado</th><th>Acciones</th></tr></thead>
               <tbody>
                 {filtered.map(m => {
                   const info = getDaysInfo(m.end_date);
@@ -865,9 +884,22 @@ export function AdminActiveMembershipsPage() {
                         </span>
                       </td>
                       <td>
-                        <span className={m.status === 'active' && info.days >= 0 ? 'badge-active' : 'badge-inactive'}>
-                          {m.status === 'active' && info.days >= 0 ? 'Activa' : 'Vencida'}
+                        <span className={
+                          m.status === 'cancelled' ? 'badge-inactive' :
+                          m.status === 'active' && info.days >= 0 ? 'badge-active' : 'badge-inactive'
+                        }>
+                          {m.status === 'cancelled' ? 'Anulada' :
+                           m.status === 'active' && info.days >= 0 ? 'Activa' : 'Vencida'}
                         </span>
+                      </td>
+                      <td>
+                        {m.status !== 'cancelled' && (
+                          <button onClick={() => handleCancel(m)} disabled={cancelling === m.id}
+                            title="Anular membresía"
+                            className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-red-500/20 hover:text-red-400 transition-all">
+                            {cancelling === m.id ? <Spinner size={13} /> : <Trash2 size={13} />}
+                          </button>
+                        )}
                       </td>
                     </tr>
                   );
