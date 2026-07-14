@@ -106,6 +106,7 @@ export const adminAPI = {
   resetPassword: (id, data) => api.post(`/admin/users/${id}/reset-password`, data),
   activateMembership: (id, data) => api.post(`/admin/users/${id}/activate-membership`, data),
   cancelMembership: (membershipId, reason) => api.post(`/admin/memberships/${membershipId}/cancel`, { reason }),
+  getUserMembershipsHistory: (userId) => api.get(`/admin/users/${userId}/memberships-history`),
   // Membresías Types
   getMembershipTypes: () => api.get('/admin/membership-types'),
   createMembershipType: (data) => api.post('/admin/membership-types', data),
