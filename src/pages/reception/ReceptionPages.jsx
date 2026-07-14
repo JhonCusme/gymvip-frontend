@@ -249,7 +249,7 @@ export function ReceptionClientDetailPage() {
   const [loading, setLoading] = useState(true);
   const [memTypes, setMemTypes] = useState([]);
   const [showMem, setShowMem] = useState(false);
-  const [memForm, setMemForm] = useState({ membershipTypeId: '', method: 'efectivo' });
+ const [memForm, setMemForm] = useState({ membershipTypeId: '', method: 'efectivo', startDate: '' });
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
@@ -375,16 +375,21 @@ export function ReceptionClientDetailPage() {
               ))}
             </select>
           </Field>
+          <Field label="Fecha de Inicio">
+            <input type="date" className="input-field" value={memForm.startDate}
+              onChange={e => setMemForm({ ...memForm, startDate: e.target.value })} />
+            <p className="text-xs opacity-40 mt-1">Si lo dejas vacío, inicia hoy</p>
+          </Field>
           <Field label="Método de Pago" required>
-              <select className="input-field" value={memForm.method}
-                onChange={e => setMemForm({ ...memForm, method: e.target.value })}>
-                <option value="efectivo">Efectivo</option>
-                <option value="transferencia">Transferencia</option>
-                <option value="tarjeta">Tarjeta</option>
-                <option value="cortesia">Cortesía</option>
-                <option value="beca">Beca</option>
-              </select>
-            </Field>
+            <select className="input-field" value={memForm.method}
+              onChange={e => setMemForm({ ...memForm, method: e.target.value })}>
+              <option value="efectivo">Efectivo</option>
+              <option value="transferencia">Transferencia</option>
+              <option value="tarjeta">Tarjeta</option>
+              <option value="cortesia">Cortesía</option>
+              <option value="beca">Beca</option>
+            </select>
+          </Field>
           <div className="flex gap-3">
             <button onClick={() => setShowMem(false)} className="btn-secondary flex-1 text-sm">Cancelar</button>
             <button onClick={handleMembership} disabled={saving}
