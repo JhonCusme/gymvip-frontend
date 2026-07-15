@@ -67,12 +67,14 @@ export function UserHomePage() {
   const [showPlans, setShowPlans] = useState(false);
   const [plans, setPlans] = useState([]);
 
-  useEffect(() => {
+  const loadHome = () => {
     userAPI.getHome()
       .then(r => setData(r.data))
       .catch(() => toast.error('Error al cargar'))
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { loadHome(); }, []);
 
   const openPlans = async () => {
     try { const r = await userAPI.getMembershipPlans(); setPlans(r.data); setShowPlans(true); }
@@ -95,6 +97,20 @@ export function UserHomePage() {
     { icon: Dumbbell, label: 'WOD Hoy', to: '/usuario/wod' },
   ];
 
+  const handleCancelAutoRenew = async () => {
+    const ok = window.confirm(
+      '¿Cancelar la renovación automática?\n\nTu membresía actual seguirá activa hasta su fecha de vencimiento, pero no se te volverá a cobrar automáticamente.'
+    );
+    if (!ok) return;
+    try {
+      await userAPI.cancelAutoRenew();
+      toast.success('Renovación automática cancelada');
+      loadHome(); // recargar para reflejar el cambio
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Error al cancelar');
+    }
+  };
+  
   return (
     <UserLayout title="Inicio">
       {/* Saludo */}
@@ -119,13 +135,14 @@ export function UserHomePage() {
             <p className="text-xs opacity-50">
               Válida hasta: {new Date(membership.end_date?.split('T')[0] + 'T00:00:00').toLocaleDateString('es-EC')}
             </p>
-            {membership.auto_renew && (
-              <>
-                <div className="mt-2 flex items-center gap-1.5">
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400">↺ Renovación automática activa</span>
-                </div>
-                <button className="text-xs mt-1" style={{ color: primaryColor }}>↺ Cobro automático activo</button>
-              </>
+           {membership.auto_renew && (
+              <div className="mt-3">
+                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400">↺ Renovación automática activa</span>
+                <button onClick={handleCancelAutoRenew}
+                  className="block text-xs mt-2 underline opacity-60 hover:opacity-100 transition-opacity">
+                  Cancelar renovación automática
+                </button>
+              </div>
             )}
           </div>
         ) : (

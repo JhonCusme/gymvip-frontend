@@ -184,6 +184,7 @@ export const userAPI = {
   signConsent: () => api.post('/usuario/payphone/consent'),
   getAutoCharge: () => api.get('/usuario/payphone/auto-charge'),
   cancelAutoCharge: () => api.delete('/usuario/payphone/auto-charge'),
+  cancelAutoRenew: () => api.post('/usuario/cancel-auto-renew'),
 };
 
 // ============================================================
