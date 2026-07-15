@@ -185,6 +185,7 @@ export const userAPI = {
   getAutoCharge: () => api.get('/usuario/payphone/auto-charge'),
   cancelAutoCharge: () => api.delete('/usuario/payphone/auto-charge'),
   cancelAutoRenew: () => api.post('/usuario/cancel-auto-renew'),
+  cancelBooking: (bookingId) => api.post(`/usuario/bookings/${bookingId}/cancel`),
 };
 
 // ============================================================

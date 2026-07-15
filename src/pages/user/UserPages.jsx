@@ -562,12 +562,25 @@ export function UserBookingsPage() {
   const [data, setData] = useState({ upcoming: [], past: [], cancelled: [] });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const loadBookings = () => {
     userAPI.getMyBookings()
       .then(r => setData(r.data))
       .catch(() => toast.error('Error al cargar'))
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { loadBookings(); }, []);
+
+  const handleCancelBooking = async (bookingId) => {
+    if (!window.confirm('¿Cancelar esta reserva? Se liberará tu cupo.')) return;
+    try {
+      await userAPI.cancelBooking(bookingId);
+      toast.success('Reserva cancelada');
+      loadBookings();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Error al cancelar');
+    }
+  };
 
   const tabData = { upcoming: 'Próximas clases', past: 'Clases pasadas', cancelled: 'Clases canceladas' };
 
@@ -599,7 +612,15 @@ export function UserBookingsPage() {
                     </p>
                     {b.instructor_name && <p className="text-xs opacity-30">👤 {b.instructor_name}</p>}
                   </div>
-                  {getBadge(b, key)}
+                  <div className="flex flex-col items-end gap-1.5">
+                    {getBadge(b, key)}
+                    {key === 'upcoming' && (
+                      <button onClick={() => handleCancelBooking(b.id)}
+                        className="text-xs text-red-400 underline opacity-70 hover:opacity-100 transition-opacity">
+                        Cancelar
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))
             }
