@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { receptionAPI, adminAPI } from '../../api';
 import { KPICard, PageHeader, SearchInput, Modal, Field, Spinner, EmptyState, Tabs } from '../../components/ui';
-import { Users, CreditCard, CalendarCheck, DollarSign, QrCode, Plus, ChevronRight, RefreshCw, Check, X } from 'lucide-react';
+import { Users, CreditCard, CalendarCheck, DollarSign, QrCode, Plus, ChevronRight, RefreshCw, Check, X, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
@@ -412,14 +412,31 @@ export function ReceptionMembershipsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
+  const [cancelling, setCancelling] = useState(null);
 
-  useEffect(() => {
+  const loadMems = () => {
     setLoading(true);
     receptionAPI.getMemberships({ filter })
       .then(r => setMemberships(r.data))
       .catch(() => toast.error('Error al cargar'))
       .finally(() => setLoading(false));
-  }, [filter]);
+  };
+
+  const handleCancel = async (m) => {
+    if (!window.confirm(`¿Anular la membresía de ${m.client_name}?\n\nSolo puedes anular membresías que registraste hoy y que no sean de PayPhone.`)) return;
+    setCancelling(m.id);
+    try {
+      await receptionAPI.cancelMembership(m.id);
+      toast.success('Membresía anulada');
+      loadMems();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Error al anular');
+    } finally {
+      setCancelling(null);
+    }
+  };
+
+ useEffect(() => { loadMems(); }, [filter]);
 
   // Días restantes y color según vencimiento
   const getDaysInfo = (endDate) => {
@@ -464,7 +481,7 @@ export function ReceptionMembershipsPage() {
           : filtered.length === 0 ? <EmptyState icon={CreditCard} title="No hay membresías" />
           : (
             <table className="data-table">
-              <thead><tr><th>Cliente</th><th>Tipo</th><th>Vencimiento</th><th>Restante</th><th>Estado</th></tr></thead>
+              <thead><tr><th>Cliente</th><th>Tipo</th><th>Vencimiento</th><th>Restante</th><th>Estado</th><th>Acciones</th></tr></thead>
               <tbody>
                 {filtered.map(m => {
                   const info = getDaysInfo(m.end_date);
@@ -482,9 +499,21 @@ export function ReceptionMembershipsPage() {
                         </span>
                       </td>
                       <td>
-                        <span className={m.status === 'active' && info.days >= 0 ? 'badge-active' : 'badge-inactive'}>
-                          {m.status === 'active' && info.days >= 0 ? 'Activa' : 'Vencida'}
+                        <span className={
+                          m.status === 'cancelled' ? 'badge-inactive' :
+                          m.status === 'active' && info.days >= 0 ? 'badge-active' : 'badge-inactive'
+                        }>
+                          {m.status === 'cancelled' ? 'Anulada' : m.status === 'active' && info.days >= 0 ? 'Activa' : 'Vencida'}
                         </span>
+                      </td>
+                      <td>
+                        {m.status === 'active' && info.days >= 0 && (
+                          <button onClick={() => handleCancel(m)} disabled={cancelling === m.id}
+                            title="Anular membresía"
+                            className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-red-500/20 hover:text-red-400 transition-all">
+                            {cancelling === m.id ? <Spinner size={13} /> : <Trash2 size={13} />}
+                          </button>
+                        )}
                       </td>
                     </tr>
                   );
