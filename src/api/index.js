@@ -162,6 +162,7 @@ export const receptionAPI = {
   getAttendance: (params) => api.get('/recepcion/attendance', { params }),
   getMembershipTypes: () => api.get('/recepcion/membership-types'),
   cancelMembership: (membershipId) => api.post(`/recepcion/memberships/${membershipId}/cancel`),
+  getUserMembershipsHistory: (userId) => api.get(`/recepcion/users/${userId}/memberships-history`),
 };
 
 // ============================================================

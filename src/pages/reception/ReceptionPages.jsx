@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { receptionAPI, adminAPI } from '../../api';
 import { KPICard, PageHeader, SearchInput, Modal, Field, Spinner, EmptyState, Tabs } from '../../components/ui';
-import { Users, CreditCard, CalendarCheck, DollarSign, QrCode, Plus, ChevronRight, RefreshCw, Check, X, Trash2 } from 'lucide-react';
+import { Users, CreditCard, CalendarCheck, DollarSign, QrCode, Plus, ChevronRight, RefreshCw, Check, X, Trash2, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
@@ -413,6 +413,9 @@ export function ReceptionMembershipsPage() {
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [cancelling, setCancelling] = useState(null);
+  const [historyUser, setHistoryUser] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const loadMems = () => {
     setLoading(true);
@@ -422,8 +425,39 @@ export function ReceptionMembershipsPage() {
       .finally(() => setLoading(false));
   };
 
+  useEffect(() => { loadMems(); }, [filter]);
+
+  const getDaysInfo = (endDate, status) => {
+    if (status === 'cancelled') return { label: 'Anulada', color: 'text-gray-400', bg: 'bg-gray-500/20', days: -999 };
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const end = new Date(endDate.split('T')[0] + 'T00:00:00');
+    const diffDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+    if (diffDays < 0) return { label: 'Vencida', color: 'text-gray-400', bg: 'bg-gray-500/20', days: diffDays };
+    if (diffDays <= 2) return { label: `${diffDays}d`, color: 'text-red-400', bg: 'bg-red-500/20', days: diffDays };
+    if (diffDays <= 5) return { label: `${diffDays}d`, color: 'text-yellow-400', bg: 'bg-yellow-500/20', days: diffDays };
+    return { label: `${diffDays}d`, color: 'text-green-400', bg: 'bg-green-500/20', days: diffDays };
+  };
+
+  const getMethodLabel = (m) => {
+    const method = m.payment_method;
+    if (!method) return { label: 'Sin pago', color: 'bg-gray-500/20 text-gray-400' };
+    if (method === 'payphone') {
+      return m.by_staff
+        ? { label: 'PayPhone (link)', color: 'bg-blue-500/20 text-blue-400' }
+        : { label: 'PayPhone (app)', color: 'bg-purple-500/20 text-purple-400' };
+    }
+    const map = {
+      efectivo: { label: 'Efectivo', color: 'bg-emerald-500/20 text-emerald-400' },
+      transferencia: { label: 'Transferencia', color: 'bg-cyan-500/20 text-cyan-400' },
+      tarjeta: { label: 'Tarjeta', color: 'bg-indigo-500/20 text-indigo-400' },
+      cortesia: { label: 'Cortesía', color: 'bg-pink-500/20 text-pink-400' },
+      beca: { label: 'Beca', color: 'bg-pink-500/20 text-pink-400' },
+    };
+    return map[method] || { label: method, color: 'bg-gray-500/20 text-gray-400' };
+  };
+
   const handleCancel = async (m) => {
-    if (!window.confirm(`¿Anular la membresía de ${m.client_name}?\n\nSolo puedes anular membresías que registraste hoy y que no sean de PayPhone.`)) return;
+    if (!window.confirm(`¿Anular la membresía de ${m.client_name}?\n\nSolo puedes anular membresías que registraste hoy y que no sean de PayPhone (app).`)) return;
     setCancelling(m.id);
     try {
       await receptionAPI.cancelMembership(m.id);
@@ -436,27 +470,24 @@ export function ReceptionMembershipsPage() {
     }
   };
 
- useEffect(() => { loadMems(); }, [filter]);
-
-  // Días restantes y color según vencimiento
-  const getDaysInfo = (endDate) => {
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    const end = new Date(endDate.split('T')[0] + 'T00:00:00');
-    const diffDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
-    if (diffDays < 0) return { label: 'Vencida', color: 'text-gray-400', bg: 'bg-gray-500/20', days: diffDays };
-    if (diffDays <= 2) return { label: `${diffDays}d`, color: 'text-red-400', bg: 'bg-red-500/20', days: diffDays };
-    if (diffDays <= 5) return { label: `${diffDays}d`, color: 'text-yellow-400', bg: 'bg-yellow-500/20', days: diffDays };
-    return { label: `${diffDays}d`, color: 'text-green-400', bg: 'bg-green-500/20', days: diffDays };
+  const openHistory = async (m) => {
+    setHistoryUser(m);
+    setLoadingHistory(true);
+    try {
+      const r = await receptionAPI.getUserMembershipsHistory(m.user_id);
+      setHistory(r.data);
+    } catch { toast.error('Error al cargar historial'); }
+    finally { setLoadingHistory(false); }
   };
 
-  const filtered = memberships.filter(m => 
+  const filtered = memberships.filter(m =>
     !search || m.client_name?.toLowerCase().includes(search.toLowerCase()) || m.client_cedula?.includes(search)
   );
 
   return (
     <div className="fade-in">
       <h1 className="text-xl font-bold mb-5">Membresías</h1>
-      
+
       <input
         type="text"
         placeholder="🔍 Buscar por nombre o cédula..."
@@ -467,7 +498,7 @@ export function ReceptionMembershipsPage() {
       />
 
       <div className="flex gap-2 mb-4 flex-wrap">
-        {[['all', 'Todas'], ['active', 'Activas'], ['expiring', '⚠ Por vencer'], ['expired', 'Vencidas']].map(([v, l]) => (
+        {[['all', 'Todas'], ['active', 'Activas'], ['expiring', '⚠ Por vencer'], ['expired', 'Vencidas'], ['cancelled', 'Anuladas']].map(([v, l]) => (
           <button key={v} onClick={() => setFilter(v)}
             className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
             style={filter === v ? { backgroundColor: '#E85D04', color: '#fff' } : { background: '#1a1a1a', opacity: 0.5 }}>
@@ -481,10 +512,12 @@ export function ReceptionMembershipsPage() {
           : filtered.length === 0 ? <EmptyState icon={CreditCard} title="No hay membresías" />
           : (
             <table className="data-table">
-              <thead><tr><th>Cliente</th><th>Tipo</th><th>Vencimiento</th><th>Restante</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <thead><tr><th>Cliente</th><th>Tipo</th><th>Vence</th><th>Restante</th><th>Pago</th><th>Estado</th><th>Acciones</th></tr></thead>
               <tbody>
                 {filtered.map(m => {
-                  const info = getDaysInfo(m.end_date);
+                  const info = getDaysInfo(m.end_date, m.status);
+                  const method = getMethodLabel(m);
+                  const isActive = m.status === 'active' && info.days >= 0;
                   return (
                     <tr key={m.id} className="hover:bg-white/3 transition-colors">
                       <td>
@@ -499,21 +532,30 @@ export function ReceptionMembershipsPage() {
                         </span>
                       </td>
                       <td>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${method.color}`}>{method.label}</span>
+                      </td>
+                      <td>
                         <span className={
                           m.status === 'cancelled' ? 'badge-inactive' :
-                          m.status === 'active' && info.days >= 0 ? 'badge-active' : 'badge-inactive'
+                          isActive ? 'badge-active' : 'badge-inactive'
                         }>
-                          {m.status === 'cancelled' ? 'Anulada' : m.status === 'active' && info.days >= 0 ? 'Activa' : 'Vencida'}
+                          {m.status === 'cancelled' ? 'Anulada' : isActive ? 'Activa' : 'Vencida'}
                         </span>
                       </td>
                       <td>
-                        {m.status === 'active' && info.days >= 0 && (
-                          <button onClick={() => handleCancel(m)} disabled={cancelling === m.id}
-                            title="Anular membresía"
-                            className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-red-500/20 hover:text-red-400 transition-all">
-                            {cancelling === m.id ? <Spinner size={13} /> : <Trash2 size={13} />}
+                        <div className="flex gap-1">
+                          <button onClick={() => openHistory(m)} title="Ver historial"
+                            className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-white/10 transition-all">
+                            <Clock size={13} />
                           </button>
-                        )}
+                          {isActive && (
+                            <button onClick={() => handleCancel(m)} disabled={cancelling === m.id}
+                              title="Anular membresía"
+                              className="p-1.5 rounded-lg opacity-40 hover:opacity-100 hover:bg-red-500/20 hover:text-red-400 transition-all">
+                              {cancelling === m.id ? <Spinner size={13} /> : <Trash2 size={13} />}
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -522,6 +564,42 @@ export function ReceptionMembershipsPage() {
             </table>
           )}
       </div>
+
+      <Modal open={!!historyUser} onClose={() => { setHistoryUser(null); setHistory([]); }}
+        title={`Historial — ${historyUser?.client_name || ''}`} maxWidth="max-w-2xl">
+        {loadingHistory ? (
+          <div className="flex justify-center py-10"><Spinner size={24} className="opacity-30" /></div>
+        ) : history.length === 0 ? (
+          <p className="text-center text-sm opacity-30 py-8">Sin historial de membresías</p>
+        ) : (
+          <div className="flex flex-col gap-2 max-h-96 overflow-y-auto">
+            {history.map(h => {
+              const method = getMethodLabel(h);
+              return (
+                <div key={h.id} className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="font-semibold text-sm">{h.type_name}</p>
+                    <span className={
+                      h.status === 'cancelled' ? 'badge-inactive' :
+                      h.status === 'active' && new Date(h.end_date) >= new Date() ? 'badge-active' : 'badge-inactive'
+                    }>
+                      {h.status === 'cancelled' ? 'Anulada' : h.status === 'active' && new Date(h.end_date) >= new Date() ? 'Activa' : 'Vencida'}
+                    </span>
+                  </div>
+                  <p className="text-xs opacity-50">
+                    {new Date(h.start_date.split('T')[0] + 'T00:00:00').toLocaleDateString('es-EC')} — {new Date(h.end_date.split('T')[0] + 'T00:00:00').toLocaleDateString('es-EC')}
+                  </p>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${method.color}`}>{method.label}</span>
+                    {h.amount != null && <span className="text-xs opacity-50">${parseFloat(h.amount).toFixed(2)}</span>}
+                    {h.registered_by_name && <span className="text-xs opacity-30">por {h.registered_by_name}</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
