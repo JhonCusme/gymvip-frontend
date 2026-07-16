@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard, QrCode, ClipboardList, Users, CreditCard,
   CalendarDays, Dumbbell, Clock, UserCheck, Users2,
-  Wallet, BarChart2, Shield, Settings, LogOut, Menu, X
+  Wallet, BarChart2, Shield, Settings, LogOut, Menu, X, CalendarCheck
 } from 'lucide-react';
 
 const navItems = [
@@ -17,6 +17,7 @@ const navItems = [
   { to: '/dashboard/sessions', icon: CalendarDays, label: 'Sesiones' },
   { to: '/dashboard/workouts', icon: Dumbbell, label: 'Entrenamientos' },
   { to: '/dashboard/schedules', icon: Clock, label: 'Horarios' },
+  { to: '/dashboard/attendance-correction', icon: CalendarCheck, label: 'Corregir Asistencia' },
   { to: '/dashboard/instructors', icon: UserCheck, label: 'Instructores' },
   { to: '/dashboard/receptionists', icon: Users2, label: 'Recepcionistas' },
   { to: '/dashboard/payments', icon: Wallet, label: 'Pagos' },

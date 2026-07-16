@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { adminAPI } from '../../api';
-import { PageHeader, PageLoader, KPICard, EmptyState, Spinner } from '../../components/ui';
-import { Wallet, TrendingUp, Users, Clock, RefreshCw, QrCode } from 'lucide-react';
+import { PageHeader, PageLoader, KPICard, EmptyState, Spinner, Modal } from '../../components/ui';
+import { Wallet, TrendingUp, Users, Clock, RefreshCw, QrCode, CalendarCheck } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
@@ -509,6 +509,138 @@ export function AdminAuditPage() {
             </table>
           )}
       </div>
+    </div>
+  );
+}
+
+// ============================================================
+// CORRECCIÓN DE ASISTENCIA (admin, sin límite de tiempo)
+// ============================================================
+export function AdminAttendanceCorrectionPage() {
+  const { gym } = useAuth();
+  const primaryColor = gym?.primaryColor || '#E85D04';
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  });
+  const [classes, setClasses] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [attendanceClass, setAttendanceClass] = useState(null);
+  const [students, setStudents] = useState([]);
+  const [loadingStudents, setLoadingStudents] = useState(false);
+
+  const loadClasses = () => {
+    setLoading(true);
+    adminAPI.getAttendanceClasses(selectedDate)
+      .then(r => setClasses(r.data))
+      .catch(() => toast.error('Error al cargar clases'))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { loadClasses(); }, [selectedDate]);
+
+  const openAttendance = async (cls) => {
+    setAttendanceClass(cls);
+    setLoadingStudents(true);
+    try {
+      const r = await adminAPI.getAttendanceStudents(cls.id);
+      setStudents(r.data);
+    } catch { toast.error('Error al cargar alumnos'); }
+    finally { setLoadingStudents(false); }
+  };
+
+  const handleMark = async (bookingId, attended) => {
+    try {
+      await adminAPI.correctAttendance(bookingId, attended);
+      setStudents(prev => prev.map(s =>
+        s.booking_id === bookingId ? { ...s, status: attended ? 'attended' : 'no_show' } : s
+      ));
+      toast.success(attended ? 'Marcado como asistió' : 'Marcado como ausente');
+      loadClasses();
+    } catch { toast.error('Error al corregir'); }
+  };
+
+  return (
+    <div className="fade-in">
+      <PageHeader title="Corrección de Asistencia" />
+      <p className="text-sm opacity-50 mb-4">Corrige la asistencia de cualquier clase, sin límite de tiempo.</p>
+
+      <div className="mb-5">
+        <label className="text-xs opacity-50 block mb-1.5">Fecha</label>
+        <input type="date" value={selectedDate}
+          onChange={e => setSelectedDate(e.target.value)}
+          className="input-field max-w-xs" />
+      </div>
+
+      {loading ? <div className="flex justify-center py-16"><Spinner size={28} className="opacity-30" /></div>
+        : classes.length === 0 ? <EmptyState icon={CalendarCheck} title="No hay clases este día" />
+        : (
+          <div className="flex flex-col gap-3">
+            {classes.map(cls => (
+              <div key={cls.id} className="rounded-xl p-4" style={{ background: '#1a1a1a' }}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-bold">{cls.session_name}</p>
+                    <p className="text-xs opacity-50">🕐 {cls.start_time?.slice(0,5)} - {cls.end_time?.slice(0,5)}</p>
+                    {cls.instructor_name && <p className="text-xs opacity-40">👤 {cls.instructor_name}</p>}
+                    <p className="text-xs opacity-50 mt-1">
+                      {cls.enrolled} inscritos · {cls.attended_count} asistieron
+                    </p>
+                  </div>
+                  <button onClick={() => openAttendance(cls)}
+                    className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-80"
+                    style={{ backgroundColor: primaryColor }}>
+                    Ver / Corregir
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+      <Modal open={!!attendanceClass} onClose={() => { setAttendanceClass(null); setStudents([]); }}
+        title={`Asistencia — ${attendanceClass?.session_name || ''}`} maxWidth="max-w-lg">
+        {attendanceClass && (
+          <div className="flex flex-col gap-3">
+            <p className="text-xs opacity-50">
+              🕐 {attendanceClass.start_time?.slice(0,5)} - {attendanceClass.end_time?.slice(0,5)} · {students.length} inscritos
+            </p>
+            {loadingStudents ? (
+              <div className="flex justify-center py-10"><Spinner size={24} className="opacity-30" /></div>
+            ) : students.length === 0 ? (
+              <p className="text-center text-sm opacity-30 py-8">No hay alumnos inscritos</p>
+            ) : (
+              <div className="flex flex-col gap-2 max-h-96 overflow-y-auto">
+                {students.map(s => (
+                  <div key={s.booking_id} className="flex items-center justify-between p-3 rounded-xl"
+                    style={{ background: 'rgba(255,255,255,0.04)' }}>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm">{s.name}</p>
+                      <p className="text-xs opacity-40">{s.cedula}</p>
+                    </div>
+                    <div className="flex gap-1.5 flex-shrink-0">
+                      <button onClick={() => handleMark(s.booking_id, true)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                          s.status === 'attended' ? 'bg-green-500 text-white' : 'bg-white/10 opacity-50 hover:opacity-100'
+                        }`}>
+                        ✓ Asistió
+                      </button>
+                      <button onClick={() => handleMark(s.booking_id, false)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                          s.status === 'no_show' ? 'bg-red-500 text-white' : 'bg-white/10 opacity-50 hover:opacity-100'
+                        }`}>
+                        ✗ Ausente
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <button onClick={() => { setAttendanceClass(null); setStudents([]); }}
+              className="btn-secondary w-full text-sm mt-2">Cerrar</button>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

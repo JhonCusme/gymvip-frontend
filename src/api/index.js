@@ -141,6 +141,10 @@ export const adminAPI = {
   // Asignar Roles Adicionales
   assignRole: (userId, role) => api.post(`/admin/users/${userId}/roles`, { role }),
   removeRole: (userId, role) => api.delete(`/admin/users/${userId}/roles/${role}`),
+  // Asistencia
+  getAttendanceClasses: (date) => api.get('/admin/attendance/classes', { params: { date } }),
+  getAttendanceStudents: (classInstanceId) => api.get(`/admin/attendance/classes/${classInstanceId}/students`),
+  correctAttendance: (bookingId, attended) => api.post(`/admin/attendance/bookings/${bookingId}`, { attended }),
 };
 
 // ============================================================
