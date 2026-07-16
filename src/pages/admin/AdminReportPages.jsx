@@ -560,6 +560,28 @@ export function AdminAttendanceCorrectionPage() {
     } catch { toast.error('Error al corregir'); }
   };
 
+  const handleCancelClass = async (cls) => {
+    if (!window.confirm(`¿Cancelar la clase ${cls.session_name} de las ${cls.start_time?.slice(0,5)}?\n\nSe liberarán las reservas y se notificará a los ${cls.enrolled} inscritos.`)) return;
+    try {
+      const r = await adminAPI.cancelClass(cls.id);
+      toast.success(`Clase cancelada. ${r.data.notified} alumnos notificados.`);
+      loadClasses();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Error al cancelar');
+    }
+  };
+
+  const handleCancelDay = async () => {
+    if (!window.confirm(`¿Cancelar TODAS las clases del ${selectedDate}?\n\nEsto es para feriados. Se liberarán todas las reservas y se notificará a los inscritos.`)) return;
+    try {
+      const r = await adminAPI.cancelDay(selectedDate);
+      toast.success(`${r.data.classesCancelled} clases canceladas. ${r.data.notified} alumnos notificados.`);
+      loadClasses();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Error al cancelar el día');
+    }
+  };
+
   return (
     <div className="fade-in">
       <PageHeader title="Clases del Día" />
@@ -663,25 +685,4 @@ export function AdminAttendanceCorrectionPage() {
       </Modal>
     </div>
   );
-  const handleCancelClass = async (cls) => {
-    if (!window.confirm(`¿Cancelar la clase ${cls.session_name} de las ${cls.start_time?.slice(0,5)}?\n\nSe liberarán las reservas y se notificará a los ${cls.enrolled} inscritos.`)) return;
-    try {
-      const r = await adminAPI.cancelClass(cls.id);
-      toast.success(`Clase cancelada. ${r.data.notified} alumnos notificados.`);
-      loadClasses();
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'Error al cancelar');
-    }
-  };
-
-  const handleCancelDay = async () => {
-    if (!window.confirm(`¿Cancelar TODAS las clases del ${selectedDate}?\n\nEsto es para feriados. Se liberarán todas las reservas y se notificará a los inscritos.`)) return;
-    try {
-      const r = await adminAPI.cancelDay(selectedDate);
-      toast.success(`${r.data.classesCancelled} clases canceladas. ${r.data.notified} alumnos notificados.`);
-      loadClasses();
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'Error al cancelar el día');
-    }
-  };
 }
