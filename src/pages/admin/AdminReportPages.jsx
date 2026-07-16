@@ -562,14 +562,22 @@ export function AdminAttendanceCorrectionPage() {
 
   return (
     <div className="fade-in">
-      <PageHeader title="Corrección de Asistencia" />
-      <p className="text-sm opacity-50 mb-4">Corrige la asistencia de cualquier clase, sin límite de tiempo.</p>
+      <PageHeader title="Clases del Día" />
+      <p className="text-sm opacity-50 mb-4">Corrige asistencia o cancela clases (feriados, coach ausente).</p>
 
-      <div className="mb-5">
-        <label className="text-xs opacity-50 block mb-1.5">Fecha</label>
-        <input type="date" value={selectedDate}
-          onChange={e => setSelectedDate(e.target.value)}
-          className="input-field max-w-xs" />
+      <div className="mb-5 flex items-end gap-3 flex-wrap">
+        <div>
+          <label className="text-xs opacity-50 block mb-1.5">Fecha</label>
+          <input type="date" value={selectedDate}
+            onChange={e => setSelectedDate(e.target.value)}
+            className="input-field max-w-xs" />
+        </div>
+        {classes.length > 0 && (
+          <button onClick={handleCancelDay}
+            className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all">
+            🚫 Cancelar todo el día (feriado)
+          </button>
+        )}
       </div>
 
       {loading ? <div className="flex justify-center py-16"><Spinner size={28} className="opacity-30" /></div>
@@ -587,11 +595,23 @@ export function AdminAttendanceCorrectionPage() {
                       {cls.enrolled} inscritos · {cls.attended_count} asistieron
                     </p>
                   </div>
-                  <button onClick={() => openAttendance(cls)}
-                    className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-80"
-                    style={{ backgroundColor: primaryColor }}>
-                    Ver / Corregir
-                  </button>
+                  <div className="flex flex-col gap-2 items-end">
+                    {cls.status === 'cancelled' ? (
+                      <span className="px-3 py-1 rounded-lg text-xs font-bold bg-red-500/20 text-red-400">Cancelada</span>
+                    ) : (
+                      <>
+                        <button onClick={() => openAttendance(cls)}
+                          className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-80 w-full"
+                          style={{ backgroundColor: primaryColor }}>
+                          Ver / Corregir
+                        </button>
+                        <button onClick={() => handleCancelClass(cls)}
+                          className="px-4 py-2 rounded-lg text-xs font-semibold bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all w-full">
+                          Cancelar clase
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -643,4 +663,25 @@ export function AdminAttendanceCorrectionPage() {
       </Modal>
     </div>
   );
+  const handleCancelClass = async (cls) => {
+    if (!window.confirm(`¿Cancelar la clase ${cls.session_name} de las ${cls.start_time?.slice(0,5)}?\n\nSe liberarán las reservas y se notificará a los ${cls.enrolled} inscritos.`)) return;
+    try {
+      const r = await adminAPI.cancelClass(cls.id);
+      toast.success(`Clase cancelada. ${r.data.notified} alumnos notificados.`);
+      loadClasses();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Error al cancelar');
+    }
+  };
+
+  const handleCancelDay = async () => {
+    if (!window.confirm(`¿Cancelar TODAS las clases del ${selectedDate}?\n\nEsto es para feriados. Se liberarán todas las reservas y se notificará a los inscritos.`)) return;
+    try {
+      const r = await adminAPI.cancelDay(selectedDate);
+      toast.success(`${r.data.classesCancelled} clases canceladas. ${r.data.notified} alumnos notificados.`);
+      loadClasses();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Error al cancelar el día');
+    }
+  };
 }

@@ -145,6 +145,8 @@ export const adminAPI = {
   getAttendanceClasses: (date) => api.get('/admin/attendance/classes', { params: { date } }),
   getAttendanceStudents: (classInstanceId) => api.get(`/admin/attendance/classes/${classInstanceId}/students`),
   correctAttendance: (bookingId, attended) => api.post(`/admin/attendance/bookings/${bookingId}`, { attended }),
+  cancelClass: (classInstanceId) => api.post(`/admin/classes/${classInstanceId}/cancel`),
+  cancelDay: (date) => api.post('/admin/classes/cancel-day', { date }),
 };
 
 // ============================================================
