@@ -528,6 +528,11 @@ export function AdminAttendanceCorrectionPage() {
   const [attendanceClass, setAttendanceClass] = useState(null);
   const [students, setStudents] = useState([]);
   const [loadingStudents, setLoadingStudents] = useState(false);
+  const [bookingClass, setBookingClass] = useState(null);
+  const [userSearch, setUserSearch] = useState('');
+  const [userResults, setUserResults] = useState([]);
+  const [searchingUsers, setSearchingUsers] = useState(false);
+  const [bookingUser, setBookingUser] = useState(false);
 
   const loadClasses = () => {
     setLoading(true);
@@ -582,6 +587,35 @@ export function AdminAttendanceCorrectionPage() {
     }
   };
 
+  const searchUsers = async (q) => {
+    setUserSearch(q);
+    if (q.length < 2) { setUserResults([]); return; }
+    setSearchingUsers(true);
+    try {
+      const r = await adminAPI.getUsers({ search: q });
+      // getUsers puede devolver {users:[...]} o [...] según implementación
+      const list = Array.isArray(r.data) ? r.data : (r.data.users || []);
+      setUserResults(list);
+    } catch { toast.error('Error al buscar'); }
+    finally { setSearchingUsers(false); }
+  };
+
+  const handleBookStudent = async (userId) => {
+    setBookingUser(true);
+    try {
+      await adminAPI.bookStudent(bookingClass.id, userId);
+      toast.success('Alumno inscrito');
+      setBookingClass(null);
+      setUserSearch('');
+      setUserResults([]);
+      loadClasses();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Error al inscribir');
+    } finally {
+      setBookingUser(false);
+    }
+  };
+
   return (
     <div className="fade-in">
       <PageHeader title="Clases del Día" />
@@ -626,6 +660,10 @@ export function AdminAttendanceCorrectionPage() {
                           className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-80 w-full"
                           style={{ backgroundColor: primaryColor }}>
                           Ver / Corregir
+                        </button>
+                        <button onClick={() => setBookingClass(cls)}
+                          className="px-4 py-2 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 transition-all w-full">
+                          + Inscribir alumno
                         </button>
                         <button onClick={() => handleCancelClass(cls)}
                           className="px-4 py-2 rounded-lg text-xs font-semibold bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all w-full">
@@ -680,6 +718,54 @@ export function AdminAttendanceCorrectionPage() {
             )}
             <button onClick={() => { setAttendanceClass(null); setStudents([]); }}
               className="btn-secondary w-full text-sm mt-2">Cerrar</button>
+          </div>
+        )}
+      </Modal>
+      {/* Modal Inscribir Alumno */}
+      <Modal open={!!bookingClass} onClose={() => { setBookingClass(null); setUserSearch(''); setUserResults([]); }}
+        title={`Inscribir alumno — ${bookingClass?.session_name || ''}`} maxWidth="max-w-lg">
+        {bookingClass && (
+          <div className="flex flex-col gap-3">
+            <p className="text-xs opacity-50">
+              🕐 {bookingClass.start_time?.slice(0,5)} · {bookingClass.enrolled} inscritos
+            </p>
+            <input
+              type="text"
+              placeholder="🔍 Buscar por nombre o cédula..."
+              value={userSearch}
+              onChange={e => searchUsers(e.target.value)}
+              className="input-field"
+              autoFocus
+            />
+            {searchingUsers ? (
+              <div className="flex justify-center py-6"><Spinner size={20} className="opacity-30" /></div>
+            ) : userSearch.length < 2 ? (
+              <p className="text-center text-xs opacity-30 py-6">Escribe al menos 2 letras para buscar</p>
+            ) : userResults.length === 0 ? (
+              <p className="text-center text-xs opacity-30 py-6">No se encontraron alumnos</p>
+            ) : (
+              <div className="flex flex-col gap-1.5 max-h-72 overflow-y-auto">
+                {userResults.map(u => (
+                  <div key={u.id} className="flex items-center justify-between p-2.5 rounded-lg"
+                    style={{ background: 'rgba(255,255,255,0.04)' }}>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm">{u.name}</p>
+                      <p className="text-xs opacity-40">{u.cedula}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${u.membership_status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                        {u.membership_status === 'active' ? 'Activa' : 'Sin membresía'}
+                      </span>
+                      <button onClick={() => handleBookStudent(u.id)} disabled={bookingUser || u.membership_status !== 'active'}
+                        className="px-3 py-1 rounded-lg text-xs font-bold text-white disabled:opacity-30"
+                        style={{ backgroundColor: primaryColor }}>
+                        Inscribir
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </Modal>

@@ -147,6 +147,7 @@ export const adminAPI = {
   correctAttendance: (bookingId, attended) => api.post(`/admin/attendance/bookings/${bookingId}`, { attended }),
   cancelClass: (classInstanceId) => api.post(`/admin/classes/${classInstanceId}/cancel`),
   cancelDay: (date) => api.post('/admin/classes/cancel-day', { date }),
+  bookStudent: (classInstanceId, userId) => api.post(`/admin/schedules/${classInstanceId}/book`, { userId }),
 };
 
 // ============================================================
