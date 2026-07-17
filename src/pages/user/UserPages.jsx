@@ -88,7 +88,7 @@ export function UserHomePage() {
   );
 
   const { membership } = data || {};
-  const hasActiveMem = membership && new Date(membership.end_date) >= new Date();
+  const hasActiveMem = membership && membership.status === 'active' && new Date(membership.end_date) >= new Date();
 
   const quickActions = [
     { icon: Calendar, label: 'Agendar', to: '/usuario/schedule' },
