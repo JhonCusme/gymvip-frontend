@@ -18,7 +18,7 @@ import { SuperReportsPage, SuperThemesPage, SuperBackupPage, SuperSettingsPage }
 // Admin
 import AdminDashboardPage from './pages/admin/DashboardPage';
 import AdminUsersPage from './pages/admin/UsersPage';
-import { AdminSessionsPage, AdminSchedulesPage, AdminInstructorsPage, AdminReceptionistsPage, AdminActiveMembershipsPage } from './pages/admin/AdminSubPages';
+import { AdminSessionsPage, AdminSchedulesPage, AdminInstructorsPage, AdminReceptionistsPage, AdminActiveMembershipsPage, AdminBirthdaysPage } from './pages/admin/AdminSubPages';
 import { AdminPaymentsPage, AdminReportsPage, AdminValidateEntryPage, AdminAttendancePage, AdminAuditPage, AdminAttendanceCorrectionPage } from './pages/admin/AdminReportPages';
 import { AdminMembershipsPage, AdminSettingsPage } from './pages/admin/AdminSettingsPages';
 import WodPage from './pages/admin/WodPage';
@@ -94,6 +94,7 @@ function AppRoutes() {
         <Route path="settings" element={<AdminSettingsPage />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
         <Route path="attendance-correction" element={<AdminAttendanceCorrectionPage />} />
+        <Route path="birthdays" element={<AdminBirthdaysPage />} />
       </Routes></AdminLayout></PrivateRoute>} />
 
       {/* RECEPCIÓN */}

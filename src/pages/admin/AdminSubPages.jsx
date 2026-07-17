@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { adminAPI, uploadAPI } from '../../api';
 import { PageHeader, Modal, Field, Spinner, EmptyState, ConfirmDialog } from '../../components/ui';
-import { Plus, Edit2, Trash2, Clock, Users, Key, CreditCard } from 'lucide-react';
+import { Plus, Edit2, Trash2, Clock, Users, Key, CreditCard, Gift } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 
@@ -989,3 +989,77 @@ export function AdminActiveMembershipsPage() {
   );
 }
 
+// ============================================================
+// CUMPLEAÑEROS
+// ============================================================
+export function AdminBirthdaysPage() {
+  const { gym } = useAuth();
+  const primaryColor = gym?.primaryColor || '#E85D04';
+  const [birthdays, setBirthdays] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('today');
+
+  useEffect(() => {
+    setLoading(true);
+    adminAPI.getBirthdays(filter)
+      .then(r => setBirthdays(r.data))
+      .catch(() => toast.error('Error al cargar cumpleañeros'))
+      .finally(() => setLoading(false));
+  }, [filter]);
+
+  const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+  const isToday = (b) => {
+    const now = new Date();
+    return b.day === now.getDate() && b.month === (now.getMonth() + 1);
+  };
+
+  return (
+    <div className="fade-in">
+      <PageHeader title="Cumpleañeros" />
+
+      <div className="flex gap-2 mb-5">
+        {[['today', '🎂 Hoy'], ['week', 'Esta semana'], ['month', 'Este mes']].map(([v, l]) => (
+          <button key={v} onClick={() => setFilter(v)}
+            className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+            style={filter === v ? { backgroundColor: primaryColor, color: '#fff' } : { background: '#1a1a1a', opacity: 0.5 }}>
+            {l}
+          </button>
+        ))}
+      </div>
+
+      {loading ? <div className="flex justify-center py-16"><Spinner size={28} className="opacity-30" /></div>
+        : birthdays.length === 0 ? (
+          <EmptyState icon={Gift} title={
+            filter === 'today' ? 'Nadie cumple años hoy' :
+            filter === 'week' ? 'Nadie cumple años esta semana' : 'Nadie cumple años este mes'
+          } />
+        ) : (
+          <div className="flex flex-col gap-2">
+            {birthdays.map(b => (
+              <div key={b.id} className="flex items-center justify-between p-4 rounded-xl"
+                style={{ background: '#1a1a1a', border: isToday(b) ? `1px solid ${primaryColor}` : '1px solid transparent' }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-full flex items-center justify-center text-white font-black"
+                    style={{ backgroundColor: primaryColor }}>
+                    {b.name?.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm flex items-center gap-2">
+                      {b.name}
+                      {isToday(b) && <span className="text-xs px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-400">🎂 ¡Hoy!</span>}
+                    </p>
+                    <p className="text-xs opacity-40">{b.cedula}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold">{b.day} {meses[b.month - 1]}</p>
+                  {b.phone && <p className="text-xs opacity-40">📱 {b.phone}</p>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+    </div>
+  );
+}
