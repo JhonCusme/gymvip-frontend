@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { LayoutDashboard, Users, CreditCard, Wallet, QrCode, Clock, ClipboardList, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Users, CreditCard, Wallet, QrCode, Clock, ClipboardList, LogOut, Gift, Menu, X } from 'lucide-react';
 
 const navItems = [
   { to: '/recepcion', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/recepcion/clients', icon: Users, label: 'Clientes' },
   { to: '/recepcion/memberships', icon: CreditCard, label: 'Membresías' },
+  { to: '/recepcion/birthdays', icon: Gift, label: 'Cumpleañeros' },
   { to: '/recepcion/payments', icon: Wallet, label: 'Pagos' },
   { to: '/recepcion/scanner', icon: QrCode, label: 'Escáner QR' },
   { to: '/recepcion/schedules', icon: Clock, label: 'Horarios' },

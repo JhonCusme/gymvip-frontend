@@ -25,7 +25,7 @@ import WodPage from './pages/admin/WodPage';
 
 
 // Recepción
-import { ReceptionDashboardPage, ReceptionClientsPage, ReceptionClientDetailPage, ReceptionMembershipsPage, ReceptionPaymentsPage, ReceptionScannerPage, ReceptionSchedulesPage, ReceptionAttendancePage } from './pages/reception/ReceptionPages';
+import { ReceptionDashboardPage, ReceptionClientsPage, ReceptionClientDetailPage, ReceptionMembershipsPage, ReceptionPaymentsPage, ReceptionScannerPage, ReceptionSchedulesPage, ReceptionAttendancePage, ReceptionBirthdaysPage } from './pages/reception/ReceptionPages';
 
 // Instructor
 import { InstructorTodayPage, InstructorRoutinesPage, InstructorAttendancePage, InstructorProfilePage, InstructorWodPage } from './pages/instructor/InstructorPages';
@@ -107,6 +107,7 @@ function AppRoutes() {
         <Route path="scanner" element={<ReceptionScannerPage />} />
         <Route path="schedules" element={<ReceptionSchedulesPage />} />
         <Route path="attendance" element={<ReceptionAttendancePage />} />
+        <Route path="birthdays" element={<ReceptionBirthdaysPage />} />
         <Route path="*" element={<Navigate to="/recepcion" replace />} />
       </Routes></ReceptionLayout></PrivateRoute>} />
 
