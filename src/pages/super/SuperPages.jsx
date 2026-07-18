@@ -379,19 +379,19 @@ export function SuperSubscriptionsPage() {
   useEffect(() => { load(); }, []);
 
   const getStatusBadge = (sub) => {
-    if (sub.saas_status === 'suspended') return { label: 'Suspendido', color: 'bg-red-500/20 text-red-400' };
-    if (sub.days_to_payment == null) return { label: 'Sin plan', color: 'bg-gray-500/20 text-gray-400' };
-    if (sub.days_to_payment < 0) return { label: 'Vencido', color: 'bg-red-500/20 text-red-400' };
-    if (sub.days_to_payment <= 5) return { label: 'Por vencer', color: 'bg-yellow-500/20 text-yellow-400' };
-    return { label: 'Activo', color: 'bg-green-500/20 text-green-400' };
+    if (sub.saas_status === 'suspended') return { label: 'Suspendido', color: 'bg-red-100 text-red-700' };
+    if (sub.days_to_payment == null) return { label: 'Sin plan', color: 'bg-gray-100 text-gray-600' };
+    if (sub.days_to_payment < 0) return { label: 'Vencido', color: 'bg-red-100 text-red-700' };
+    if (sub.days_to_payment <= 5) return { label: 'Por vencer', color: 'bg-yellow-100 text-yellow-700' };
+    return { label: 'Activo', color: 'bg-green-100 text-green-700' };
   };
 
   const getUsageColor = (current, max) => {
-    if (!max) return 'text-green-400';
+    if (!max) return 'text-green-600';
     const pct = (current / max) * 100;
-    if (pct >= 100) return 'text-red-400';
-    if (pct >= 90) return 'text-yellow-400';
-    return 'text-green-400';
+    if (pct >= 100) return 'text-red-600';
+    if (pct >= 90) return 'text-yellow-600';
+    return 'text-green-600';
   };
 
   const handleAssign = async () => {
@@ -444,37 +444,47 @@ export function SuperSubscriptionsPage() {
     <div className="fade-in">
       <PageHeader title="Suscripciones" />
 
-      <div className="rounded-xl overflow-hidden" style={{ background: '#1a1a1a' }}>
-        <table className="data-table">
-          <thead><tr><th>Gym</th><th>Plan</th><th>Precio</th><th>Uso</th><th>Próximo pago</th><th>Estado</th><th>Acciones</th></tr></thead>
-          <tbody>
+      <div className="rounded-xl overflow-hidden bg-white shadow-sm border border-gray-200">
+        <table className="w-full text-left">
+          <thead className="bg-gray-50 border-b border-gray-200">
+            <tr className="text-xs uppercase text-gray-500">
+              <th className="px-4 py-3">Gym</th>
+              <th className="px-4 py-3">Plan</th>
+              <th className="px-4 py-3">Precio</th>
+              <th className="px-4 py-3">Uso</th>
+              <th className="px-4 py-3">Próximo pago</th>
+              <th className="px-4 py-3">Estado</th>
+              <th className="px-4 py-3">Acciones</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
             {subs.map(sub => {
               const badge = getStatusBadge(sub);
               return (
-                <tr key={sub.id} className="hover:bg-white/3 transition-colors">
-                  <td>
-                    <p className="font-semibold text-sm">{sub.name}</p>
-                    <p className="text-xs opacity-40">{sub.slug}</p>
+                <tr key={sub.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-3">
+                    <p className="font-semibold text-sm text-gray-900">{sub.name}</p>
+                    <p className="text-xs text-gray-400">{sub.slug}</p>
                   </td>
-                  <td className="text-sm">{sub.plan_name || (sub.saas_price ? 'Personalizado' : '—')}</td>
-                  <td className="text-sm">{sub.saas_price ? `$${parseFloat(sub.saas_price).toFixed(2)}` : '—'}</td>
-                  <td>
+                  <td className="px-4 py-3 text-sm text-gray-700">{sub.plan_name || (sub.saas_price ? 'Personalizado' : '—')}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700">{sub.saas_price ? `$${parseFloat(sub.saas_price).toFixed(2)}` : '—'}</td>
+                  <td className="px-4 py-3">
                     <span className={`text-sm font-bold ${getUsageColor(sub.current_users, sub.saas_max_users)}`}>
                       {sub.current_users}{sub.saas_max_users ? `/${sub.saas_max_users}` : ' (∞)'}
                     </span>
                   </td>
-                  <td className="text-xs opacity-60">
+                  <td className="px-4 py-3 text-xs text-gray-500">
                     {sub.saas_next_payment ? new Date(sub.saas_next_payment.split('T')[0] + 'T00:00:00').toLocaleDateString('es-EC') : '—'}
                   </td>
-                  <td><span className={`text-xs px-2 py-0.5 rounded-full ${badge.color}`}>{badge.label}</span></td>
-                  <td>
-                    <div className="flex gap-1 flex-wrap">
+                  <td className="px-4 py-3"><span className={`text-xs px-2 py-1 rounded-full font-medium ${badge.color}`}>{badge.label}</span></td>
+                  <td className="px-4 py-3">
+                    <div className="flex gap-1.5 flex-wrap">
                       <button onClick={() => { setAssignGym(sub); setAssignForm({ planId: '', customPrice: '', customMaxUsers: '', startDate: '' }); }}
-                        className="px-2 py-1 rounded-lg text-xs bg-white/10 hover:bg-white/20">Plan</button>
+                        className="px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">Plan</button>
                       <button onClick={() => { setPayGym(sub); setPayForm({ amount: sub.saas_price || '', notes: '' }); }}
-                        className="px-2 py-1 rounded-lg text-xs bg-green-500/20 text-green-400 hover:bg-green-500/30">Pago</button>
+                        className="px-2.5 py-1 rounded-lg text-xs font-medium bg-green-100 text-green-700 hover:bg-green-200 transition-colors">Pago</button>
                       <button onClick={() => handleSuspend(sub)}
-                        className="px-2 py-1 rounded-lg text-xs bg-red-500/20 text-red-400 hover:bg-red-500/30">
+                        className="px-2.5 py-1 rounded-lg text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors">
                         {sub.saas_status === 'suspended' ? 'Reactivar' : 'Suspender'}
                       </button>
                     </div>
@@ -489,11 +499,11 @@ export function SuperSubscriptionsPage() {
       {/* Modal Asignar Plan */}
       {assignGym && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => setAssignGym(null)}>
-          <div className="rounded-2xl p-6 max-w-md w-full" style={{ background: '#1a1a1a' }} onClick={e => e.stopPropagation()}>
-            <p className="font-bold text-lg mb-4">Asignar plan — {assignGym.name}</p>
+          <div className="rounded-2xl p-6 max-w-md w-full bg-white shadow-xl" onClick={e => e.stopPropagation()}>
+            <p className="font-bold text-lg mb-4 text-gray-900">Asignar plan — {assignGym.name}</p>
             <div className="flex flex-col gap-3">
               <div>
-                <label className="text-xs opacity-50 block mb-1">Plan</label>
+                <label className="text-xs text-gray-500 block mb-1">Plan</label>
                 <select className="input-field w-full" value={assignForm.planId}
                   onChange={e => setAssignForm({ ...assignForm, planId: e.target.value })}>
                   <option value="">Seleccionar...</option>
@@ -506,19 +516,19 @@ export function SuperSubscriptionsPage() {
               {assignForm.planId === 'custom' && (
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs opacity-50 block mb-1">Precio $</label>
+                    <label className="text-xs text-gray-500 block mb-1">Precio $</label>
                     <input type="number" className="input-field w-full" value={assignForm.customPrice}
                       onChange={e => setAssignForm({ ...assignForm, customPrice: e.target.value })} />
                   </div>
                   <div>
-                    <label className="text-xs opacity-50 block mb-1">Máx usuarios (vacío = ∞)</label>
+                    <label className="text-xs text-gray-500 block mb-1">Máx usuarios (vacío = ∞)</label>
                     <input type="number" className="input-field w-full" value={assignForm.customMaxUsers}
                       onChange={e => setAssignForm({ ...assignForm, customMaxUsers: e.target.value })} />
                   </div>
                 </div>
               )}
               <div>
-                <label className="text-xs opacity-50 block mb-1">Fecha de inicio (vacío = hoy)</label>
+                <label className="text-xs text-gray-500 block mb-1">Fecha de inicio (vacío = hoy)</label>
                 <input type="date" className="input-field w-full" value={assignForm.startDate}
                   onChange={e => setAssignForm({ ...assignForm, startDate: e.target.value })} />
               </div>
@@ -536,17 +546,17 @@ export function SuperSubscriptionsPage() {
       {/* Modal Registrar Pago */}
       {payGym && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => setPayGym(null)}>
-          <div className="rounded-2xl p-6 max-w-md w-full" style={{ background: '#1a1a1a' }} onClick={e => e.stopPropagation()}>
-            <p className="font-bold text-lg mb-1">Registrar pago — {payGym.name}</p>
-            <p className="text-xs opacity-50 mb-4">Extiende la suscripción un mes desde el vencimiento actual.</p>
+          <div className="rounded-2xl p-6 max-w-md w-full bg-white shadow-xl" onClick={e => e.stopPropagation()}>
+            <p className="font-bold text-lg mb-1 text-gray-900">Registrar pago — {payGym.name}</p>
+            <p className="text-xs text-gray-500 mb-4">Extiende la suscripción según el período elegido.</p>
             <div className="flex flex-col gap-3">
               <div>
-                <label className="text-xs opacity-50 block mb-1">Monto $</label>
+                <label className="text-xs text-gray-500 block mb-1">Monto $</label>
                 <input type="number" className="input-field w-full" value={payForm.amount}
                   onChange={e => setPayForm({ ...payForm, amount: e.target.value })} />
               </div>
               <div>
-                <label className="text-xs opacity-50 block mb-1">Notas (opcional)</label>
+                <label className="text-xs text-gray-500 block mb-1">Notas (opcional)</label>
                 <input type="text" className="input-field w-full" placeholder="Ej: pago por transferencia"
                   value={payForm.notes}
                   onChange={e => setPayForm({ ...payForm, notes: e.target.value })} />
