@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api, { userAPI, wodAPI } from '../../api';
 import { Spinner, Modal, Field } from '../../components/ui';
-import { Home, Calendar, QrCode, User, ChevronRight, Dumbbell, Clock, CreditCard, Bell, Lock, HelpCircle, LogOut, ArrowLeft, X, Check } from 'lucide-react';
+import { Home, Calendar, QrCode, User, ChevronRight, Dumbbell, Clock, CreditCard, Bell, Lock, HelpCircle, LogOut, ArrowLeft, X, Check,TrendingUp } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import toast from 'react-hot-toast';
 
@@ -95,6 +95,7 @@ export function UserHomePage() {
     { icon: QrCode, label: 'Mi QR', to: '/usuario/qr' },
     { icon: Clock, label: 'Mis Clases', to: '/usuario/bookings' },
     { icon: Dumbbell, label: 'WOD Hoy', to: '/usuario/wod' },
+    { icon: TrendingUp, label: 'Mis PRs', to: '/usuario/prs' },
   ];
 
   const handleCancelAutoRenew = async () => {
@@ -845,6 +846,182 @@ export function UserChangePasswordPage() {
           </button>
         </div>
       </div>
+    </UserLayout>
+  );
+}
+
+// ============================================================
+// CALCULADORA DE PRs
+// ============================================================
+const BASE_EXERCISES = [
+  'Deadlift', 'Back Squat', 'Front Squat', 'Overhead Squat',
+  'Clean', 'Snatch', 'Clean & Jerk', 'Shoulder Press', 'Bench Press'
+];
+
+export function UserPRsPage() {
+  const { gym } = useAuth();
+  const primaryColor = gym?.primaryColor || '#E85D04';
+  const [prs, setPrs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showAdd, setShowAdd] = useState(false);
+  const [form, setForm] = useState({ exercise: '', customExercise: '', weight: '', unit: 'lb' });
+  const [saving, setSaving] = useState(false);
+  const [selectedPR, setSelectedPR] = useState(null);
+  const [customPercent, setCustomPercent] = useState('');
+
+  const load = () => {
+    userAPI.getPRs()
+      .then(r => setPrs(r.data))
+      .catch(() => toast.error('Error al cargar'))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const handleSave = async () => {
+    const exercise = form.exercise === '__custom__' ? form.customExercise : form.exercise;
+    if (!exercise) return toast.error('Selecciona o escribe un ejercicio');
+    if (!form.weight || parseFloat(form.weight) <= 0) return toast.error('Ingresa un peso válido');
+    setSaving(true);
+    try {
+      await userAPI.savePR({ exercise, weight: parseFloat(form.weight), unit: form.unit });
+      toast.success('PR guardado');
+      setShowAdd(false);
+      setForm({ exercise: '', customExercise: '', weight: '', unit: 'lb' });
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Error al guardar');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('¿Eliminar este PR?')) return;
+    try {
+      await userAPI.deletePR(id);
+      toast.success('PR eliminado');
+      if (selectedPR?.id === id) setSelectedPR(null);
+      load();
+    } catch { toast.error('Error al eliminar'); }
+  };
+
+  const calcPercent = (weight, pct) => Math.round(weight * pct / 100 * 10) / 10;
+
+  return (
+    <UserLayout title="Mis PRs" showBack>
+      <div className="flex justify-between items-center mb-4">
+        <p className="text-sm opacity-50">Guarda tus récords y calcula porcentajes</p>
+        <button onClick={() => setShowAdd(true)}
+          className="px-3 py-1.5 rounded-lg text-sm font-semibold text-white flex items-center gap-1"
+          style={{ backgroundColor: primaryColor }}>
+          + Agregar
+        </button>
+      </div>
+
+      {loading ? <div className="flex justify-center py-16"><Spinner size={28} className="opacity-30" /></div>
+        : prs.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-4xl mb-3">🏋️</p>
+            <p className="text-sm opacity-40">Aún no tienes PRs guardados</p>
+            <p className="text-xs opacity-30 mt-1">Agrega tu primer récord con el botón de arriba</p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {prs.map(pr => (
+              <div key={pr.id}>
+                <div onClick={() => setSelectedPR(selectedPR?.id === pr.id ? null : pr)}
+                  className="flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all"
+                  style={{ background: '#1a1a1a', border: selectedPR?.id === pr.id ? `1px solid ${primaryColor}` : '1px solid transparent' }}>
+                  <div>
+                    <p className="font-bold">{pr.exercise}</p>
+                    <p className="text-xs opacity-40">Toca para ver porcentajes</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <p className="text-xl font-black" style={{ color: primaryColor }}>{pr.weight} {pr.unit}</p>
+                    <button onClick={(e) => { e.stopPropagation(); handleDelete(pr.id); }}
+                      className="opacity-30 hover:opacity-100 hover:text-red-400 transition-all">
+                      🗑
+                    </button>
+                  </div>
+                </div>
+
+                {/* Panel de porcentajes */}
+                {selectedPR?.id === pr.id && (
+                  <div className="mt-1 p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                    <div className="grid grid-cols-4 gap-2 mb-4">
+                      {[60, 70, 80, 90].map(pct => (
+                        <div key={pct} className="text-center p-2 rounded-lg" style={{ background: '#1a1a1a' }}>
+                          <p className="text-xs opacity-40">{pct}%</p>
+                          <p className="font-bold text-sm">{calcPercent(pr.weight, pct)}</p>
+                          <p className="text-xs opacity-30">{pr.unit}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input type="number" placeholder="% personalizado"
+                        value={customPercent}
+                        onChange={e => setCustomPercent(e.target.value)}
+                        className="input-field flex-1 text-sm" />
+                      {customPercent && parseFloat(customPercent) > 0 && (
+                        <div className="px-4 py-2 rounded-lg font-bold text-white whitespace-nowrap"
+                          style={{ backgroundColor: primaryColor }}>
+                          {calcPercent(pr.weight, parseFloat(customPercent))} {pr.unit}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+      {/* Modal Agregar/Editar PR */}
+      <Modal open={showAdd} onClose={() => setShowAdd(false)} title="Agregar PR">
+        <div className="flex flex-col gap-4">
+          <Field label="Ejercicio" required>
+            <select className="input-field" value={form.exercise}
+              onChange={e => setForm({ ...form, exercise: e.target.value })}>
+              <option value="">Seleccionar...</option>
+              {BASE_EXERCISES.map(ex => <option key={ex} value={ex}>{ex}</option>)}
+              <option value="__custom__">➕ Otro (personalizado)</option>
+            </select>
+          </Field>
+
+          {form.exercise === '__custom__' && (
+            <Field label="Nombre del ejercicio" required>
+              <input className="input-field" placeholder="Ej: Thruster"
+                value={form.customExercise}
+                onChange={e => setForm({ ...form, customExercise: e.target.value })} />
+            </Field>
+          )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Peso (tu récord)" required>
+              <input className="input-field" type="number" placeholder="Ej: 300"
+                value={form.weight}
+                onChange={e => setForm({ ...form, weight: e.target.value })} />
+            </Field>
+            <Field label="Unidad">
+              <select className="input-field" value={form.unit}
+                onChange={e => setForm({ ...form, unit: e.target.value })}>
+                <option value="lb">Libras (lb)</option>
+                <option value="kg">Kilos (kg)</option>
+              </select>
+            </Field>
+          </div>
+
+          <div className="flex gap-3">
+            <button onClick={() => setShowAdd(false)} className="btn-secondary flex-1 text-sm">Cancelar</button>
+            <button onClick={handleSave} disabled={saving}
+              className="btn-primary flex-1 text-sm flex items-center justify-center gap-2"
+              style={{ backgroundColor: primaryColor }}>
+              {saving && <Spinner size={14} className="text-white" />} Guardar
+            </button>
+          </div>
+        </div>
+      </Modal>
     </UserLayout>
   );
 }

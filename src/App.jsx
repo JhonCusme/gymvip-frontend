@@ -30,7 +30,7 @@ import { ReceptionDashboardPage, ReceptionClientsPage, ReceptionClientDetailPage
 // Instructor
 import { InstructorTodayPage, InstructorAttendancePage, InstructorProfilePage, InstructorWodPage } from './pages/instructor/InstructorPages';
 // Usuario
-import { UserHomePage, UserSchedulePage, UserQRPage, UserProfilePage, UserEditProfilePage, UserBookingsPage, UserPaymentHistoryPage, UserNotificationsPage, UserWodPage, UserChangePasswordPage } from './pages/user/UserPages';
+import { UserHomePage, UserSchedulePage, UserQRPage, UserProfilePage, UserEditProfilePage, UserBookingsPage, UserPaymentHistoryPage, UserNotificationsPage, UserWodPage, UserChangePasswordPage, UserPRsPage } from './pages/user/UserPages';
 import { UserPayphonePage, UserPaymentResultPage, UserAutoChargePage } from './pages/user/PayphonePages';
 
 const Placeholder = ({ label }) => <div className="flex items-center justify-center h-64 opacity-30 text-sm">{label}</div>;
@@ -132,6 +132,7 @@ function AppRoutes() {
         <Route path="payment-history" element={<UserPaymentHistoryPage />} />
         <Route path="notifications" element={<UserNotificationsPage />} />
         <Route path="wod" element={<UserWodPage />} />
+        <Route path="prs" element={<UserPRsPage />} />
         <Route path="payphone" element={<UserPayphonePage />} />
         <Route path="payment-result" element={<UserPaymentResultPage />} />
         <Route path="auto-charge" element={<UserAutoChargePage />} />

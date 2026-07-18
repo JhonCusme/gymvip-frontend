@@ -196,6 +196,9 @@ export const userAPI = {
   cancelAutoCharge: () => api.delete('/usuario/payphone/auto-charge'),
   cancelAutoRenew: () => api.post('/usuario/cancel-auto-renew'),
   cancelBooking: (bookingId) => api.post(`/usuario/bookings/${bookingId}/cancel`),
+  getPRs: () => api.get('/usuario/prs'),
+  savePR: (data) => api.post('/usuario/prs', data),
+  deletePR: (id) => api.delete(`/usuario/prs/${id}`),
 };
 
 // ============================================================
