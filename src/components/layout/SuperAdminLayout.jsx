@@ -3,11 +3,12 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   Building2, BarChart3, Palette, Database,
-  Settings, LogOut, Menu, X
+  Settings, LogOut,CreditCard, Menu, X
 } from 'lucide-react';
 
 const navItems = [
   { to: '/super/gyms',      icon: Building2, label: 'Gimnasios' },
+  { to: '/super/subscriptions', icon: CreditCard, label: 'Suscripciones' },
   { to: '/super/reports',   icon: BarChart3,  label: 'Reporte Global' },
   { to: '/super/themes',    icon: Palette,    label: 'Marketplace Temas' },
   { to: '/super/backup',    icon: Database,   label: 'Respaldo BD' },

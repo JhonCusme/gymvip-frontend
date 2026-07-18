@@ -352,3 +352,215 @@ export function SuperSettingsPage() {
     </div>
   );
 }
+
+// ============================================================
+// SUSCRIPCIONES DE GYMS (SaaS)
+// ============================================================
+export function SuperSubscriptionsPage() {
+  const [subs, setSubs] = useState([]);
+  const [plans, setPlans] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [assignGym, setAssignGym] = useState(null);
+  const [payGym, setPayGym] = useState(null);
+  const [assignForm, setAssignForm] = useState({ planId: '', customPrice: '', customMaxUsers: '', startDate: '' });
+  const [payForm, setPayForm] = useState({ amount: '', notes: '' });
+  const [saving, setSaving] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const [s, p] = await Promise.all([superAPI.getSubscriptions(), superAPI.getSaasPlans()]);
+      setSubs(s.data);
+      setPlans(p.data);
+    } catch { toast.error('Error al cargar'); }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const getStatusBadge = (sub) => {
+    if (sub.saas_status === 'suspended') return { label: 'Suspendido', color: 'bg-red-500/20 text-red-400' };
+    if (sub.days_to_payment == null) return { label: 'Sin plan', color: 'bg-gray-500/20 text-gray-400' };
+    if (sub.days_to_payment < 0) return { label: 'Vencido', color: 'bg-red-500/20 text-red-400' };
+    if (sub.days_to_payment <= 5) return { label: 'Por vencer', color: 'bg-yellow-500/20 text-yellow-400' };
+    return { label: 'Activo', color: 'bg-green-500/20 text-green-400' };
+  };
+
+  const getUsageColor = (current, max) => {
+    if (!max) return 'text-green-400';
+    const pct = (current / max) * 100;
+    if (pct >= 100) return 'text-red-400';
+    if (pct >= 90) return 'text-yellow-400';
+    return 'text-green-400';
+  };
+
+  const handleAssign = async () => {
+    if (!assignForm.planId) return toast.error('Selecciona un plan');
+    if (assignForm.planId === 'custom' && !assignForm.customPrice) return toast.error('Ingresa el precio personalizado');
+    setSaving(true);
+    try {
+      await superAPI.assignPlanToGym(assignGym.id, {
+        planId: assignForm.planId,
+        customPrice: assignForm.customPrice ? parseFloat(assignForm.customPrice) : null,
+        customMaxUsers: assignForm.customMaxUsers ? parseInt(assignForm.customMaxUsers) : null,
+        startDate: assignForm.startDate || null
+      });
+      toast.success('Plan asignado');
+      setAssignGym(null);
+      setAssignForm({ planId: '', customPrice: '', customMaxUsers: '', startDate: '' });
+      load();
+    } catch (err) { toast.error(err.response?.data?.error || 'Error'); }
+    finally { setSaving(false); }
+  };
+
+  const handlePay = async () => {
+    setSaving(true);
+    try {
+      await superAPI.registerGymPayment(payGym.id, {
+        amount: payForm.amount ? parseFloat(payForm.amount) : null,
+        notes: payForm.notes
+      });
+      toast.success('Pago registrado');
+      setPayGym(null);
+      setPayForm({ amount: '', notes: '' });
+      load();
+    } catch (err) { toast.error(err.response?.data?.error || 'Error'); }
+    finally { setSaving(false); }
+  };
+
+  const handleSuspend = async (sub) => {
+    const suspend = sub.saas_status !== 'suspended';
+    if (!window.confirm(suspend ? `¿Suspender a ${sub.name}? Sus usuarios no podrán usar el sistema.` : `¿Reactivar a ${sub.name}?`)) return;
+    try {
+      await superAPI.toggleGymSuspension(sub.id, suspend);
+      toast.success(suspend ? 'Gym suspendido' : 'Gym reactivado');
+      load();
+    } catch { toast.error('Error'); }
+  };
+
+  if (loading) return <PageLoader />;
+
+  return (
+    <div className="fade-in">
+      <PageHeader title="Suscripciones" />
+
+      <div className="rounded-xl overflow-hidden" style={{ background: '#1a1a1a' }}>
+        <table className="data-table">
+          <thead><tr><th>Gym</th><th>Plan</th><th>Precio</th><th>Uso</th><th>Próximo pago</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody>
+            {subs.map(sub => {
+              const badge = getStatusBadge(sub);
+              return (
+                <tr key={sub.id} className="hover:bg-white/3 transition-colors">
+                  <td>
+                    <p className="font-semibold text-sm">{sub.name}</p>
+                    <p className="text-xs opacity-40">{sub.slug}</p>
+                  </td>
+                  <td className="text-sm">{sub.plan_name || (sub.saas_price ? 'Personalizado' : '—')}</td>
+                  <td className="text-sm">{sub.saas_price ? `$${parseFloat(sub.saas_price).toFixed(2)}` : '—'}</td>
+                  <td>
+                    <span className={`text-sm font-bold ${getUsageColor(sub.current_users, sub.saas_max_users)}`}>
+                      {sub.current_users}{sub.saas_max_users ? `/${sub.saas_max_users}` : ' (∞)'}
+                    </span>
+                  </td>
+                  <td className="text-xs opacity-60">
+                    {sub.saas_next_payment ? new Date(sub.saas_next_payment.split('T')[0] + 'T00:00:00').toLocaleDateString('es-EC') : '—'}
+                  </td>
+                  <td><span className={`text-xs px-2 py-0.5 rounded-full ${badge.color}`}>{badge.label}</span></td>
+                  <td>
+                    <div className="flex gap-1 flex-wrap">
+                      <button onClick={() => { setAssignGym(sub); setAssignForm({ planId: '', customPrice: '', customMaxUsers: '', startDate: '' }); }}
+                        className="px-2 py-1 rounded-lg text-xs bg-white/10 hover:bg-white/20">Plan</button>
+                      <button onClick={() => { setPayGym(sub); setPayForm({ amount: sub.saas_price || '', notes: '' }); }}
+                        className="px-2 py-1 rounded-lg text-xs bg-green-500/20 text-green-400 hover:bg-green-500/30">Pago</button>
+                      <button onClick={() => handleSuspend(sub)}
+                        className="px-2 py-1 rounded-lg text-xs bg-red-500/20 text-red-400 hover:bg-red-500/30">
+                        {sub.saas_status === 'suspended' ? 'Reactivar' : 'Suspender'}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Modal Asignar Plan */}
+      {assignGym && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => setAssignGym(null)}>
+          <div className="rounded-2xl p-6 max-w-md w-full" style={{ background: '#1a1a1a' }} onClick={e => e.stopPropagation()}>
+            <p className="font-bold text-lg mb-4">Asignar plan — {assignGym.name}</p>
+            <div className="flex flex-col gap-3">
+              <div>
+                <label className="text-xs opacity-50 block mb-1">Plan</label>
+                <select className="input-field w-full" value={assignForm.planId}
+                  onChange={e => setAssignForm({ ...assignForm, planId: e.target.value })}>
+                  <option value="">Seleccionar...</option>
+                  {plans.map(p => (
+                    <option key={p.id} value={p.id}>{p.name} — ${p.price} ({p.max_users || '∞'} usuarios)</option>
+                  ))}
+                  <option value="custom">➕ Personalizado</option>
+                </select>
+              </div>
+              {assignForm.planId === 'custom' && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs opacity-50 block mb-1">Precio $</label>
+                    <input type="number" className="input-field w-full" value={assignForm.customPrice}
+                      onChange={e => setAssignForm({ ...assignForm, customPrice: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="text-xs opacity-50 block mb-1">Máx usuarios (vacío = ∞)</label>
+                    <input type="number" className="input-field w-full" value={assignForm.customMaxUsers}
+                      onChange={e => setAssignForm({ ...assignForm, customMaxUsers: e.target.value })} />
+                  </div>
+                </div>
+              )}
+              <div>
+                <label className="text-xs opacity-50 block mb-1">Fecha de inicio (vacío = hoy)</label>
+                <input type="date" className="input-field w-full" value={assignForm.startDate}
+                  onChange={e => setAssignForm({ ...assignForm, startDate: e.target.value })} />
+              </div>
+              <div className="flex gap-2 mt-2">
+                <button onClick={() => setAssignGym(null)} className="btn-secondary flex-1 text-sm">Cancelar</button>
+                <button onClick={handleAssign} disabled={saving} className="btn-primary flex-1 text-sm">
+                  {saving ? 'Guardando...' : 'Asignar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Registrar Pago */}
+      {payGym && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => setPayGym(null)}>
+          <div className="rounded-2xl p-6 max-w-md w-full" style={{ background: '#1a1a1a' }} onClick={e => e.stopPropagation()}>
+            <p className="font-bold text-lg mb-1">Registrar pago — {payGym.name}</p>
+            <p className="text-xs opacity-50 mb-4">Extiende la suscripción un mes desde el vencimiento actual.</p>
+            <div className="flex flex-col gap-3">
+              <div>
+                <label className="text-xs opacity-50 block mb-1">Monto $</label>
+                <input type="number" className="input-field w-full" value={payForm.amount}
+                  onChange={e => setPayForm({ ...payForm, amount: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-xs opacity-50 block mb-1">Notas (opcional)</label>
+                <input type="text" className="input-field w-full" placeholder="Ej: pago por transferencia"
+                  value={payForm.notes}
+                  onChange={e => setPayForm({ ...payForm, notes: e.target.value })} />
+              </div>
+              <div className="flex gap-2 mt-2">
+                <button onClick={() => setPayGym(null)} className="btn-secondary flex-1 text-sm">Cancelar</button>
+                <button onClick={handlePay} disabled={saving} className="btn-primary flex-1 text-sm">
+                  {saving ? 'Guardando...' : 'Registrar pago'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

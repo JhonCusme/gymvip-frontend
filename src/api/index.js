@@ -83,6 +83,14 @@ export const superAPI = {
   applyTheme: (id, themeSlug) => api.post(`/super/gyms/${id}/apply-theme`, { themeSlug }),
   getGlobalReport: () => api.get('/super/reports'),
   getThemes: () => api.get('/super/themes'),
+  getSaasPlans: () => api.get('/super/saas-plans'),
+  createSaasPlan: (data) => api.post('/super/saas-plans', data),
+  updateSaasPlan: (id, data) => api.put(`/super/saas-plans/${id}`, data),
+  getSubscriptions: () => api.get('/super/subscriptions'),
+  assignPlanToGym: (gymId, data) => api.post(`/super/gyms/${gymId}/assign-plan`, data),
+  registerGymPayment: (gymId, data) => api.post(`/super/gyms/${gymId}/register-payment`, data),
+  toggleGymSuspension: (gymId, suspend) => api.post(`/super/gyms/${gymId}/toggle-suspension`, { suspend }),
+  getGymPayments: (gymId) => api.get(`/super/gyms/${gymId}/payments`),
 };
 
 export const wodAPI = {

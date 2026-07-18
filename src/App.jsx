@@ -13,7 +13,7 @@ import LoginPage from './pages/auth/LoginPage';
 
 // Super Admin
 import SuperGymsPage from './pages/super/GymsPage';
-import { SuperReportsPage, SuperThemesPage, SuperBackupPage, SuperSettingsPage } from './pages/super/SuperPages';
+import { SuperReportsPage, SuperThemesPage, SuperBackupPage, SuperSettingsPage, SuperSubscriptionsPage } from './pages/super/SuperPages';
 
 // Admin
 import AdminDashboardPage from './pages/admin/DashboardPage';
@@ -68,6 +68,7 @@ function AppRoutes() {
       {/* SUPER ADMIN */}
       <Route path="/super/*" element={<PrivateRoute allowedRoles={['super_admin']}><SuperAdminLayout><Routes>
         <Route path="gyms" element={<SuperGymsPage />} />
+        <Route path="subscriptions" element={<SuperSubscriptionsPage />} />
         <Route path="reports" element={<SuperReportsPage />} />
         <Route path="themes" element={<SuperThemesPage />} />
         <Route path="backup" element={<SuperBackupPage />} />
