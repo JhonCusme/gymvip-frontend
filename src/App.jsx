@@ -28,7 +28,7 @@ import WodPage from './pages/admin/WodPage';
 import { ReceptionDashboardPage, ReceptionClientsPage, ReceptionClientDetailPage, ReceptionMembershipsPage, ReceptionPaymentsPage, ReceptionScannerPage, ReceptionSchedulesPage, ReceptionAttendancePage, ReceptionBirthdaysPage } from './pages/reception/ReceptionPages';
 
 // Instructor
-import { InstructorTodayPage, InstructorRoutinesPage, InstructorAttendancePage, InstructorProfilePage, InstructorWodPage } from './pages/instructor/InstructorPages';
+import { InstructorTodayPage, InstructorAttendancePage, InstructorProfilePage, InstructorWodPage } from './pages/instructor/InstructorPages';
 // Usuario
 import { UserHomePage, UserSchedulePage, UserQRPage, UserProfilePage, UserEditProfilePage, UserBookingsPage, UserPaymentHistoryPage, UserNotificationsPage, UserWodPage, UserChangePasswordPage } from './pages/user/UserPages';
 import { UserPayphonePage, UserPaymentResultPage, UserAutoChargePage } from './pages/user/PayphonePages';

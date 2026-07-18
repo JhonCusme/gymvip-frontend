@@ -16,7 +16,6 @@ export function InstructorLayout({ children }) {
   const navItems = [
     { to: '/instructor', icon: CalendarDays, label: 'Clases del Día' },
     { to: '/instructor/wod', icon: Dumbbell, label: 'WOD del Día' },
-    { to: '/instructor/routines', icon: Dumbbell, label: 'Rutinas y WODs' },
     { to: '/instructor/attendance', icon: History, label: 'Historial Asistencias' },
     { to: '/instructor/profile', icon: User, label: 'Mi Perfil' },
   ];
@@ -226,22 +225,7 @@ export function InstructorTodayPage() {
         </div>
       )}
 
-      {/* Acciones rápidas */}
-      <div className="mt-5">
-        <p className="font-bold mb-3 flex items-center gap-2">📋 Acciones Rápidas</p>
-        <div className="grid grid-cols-1 gap-3">
-          {[
-            { label: 'Sesiones Grupales', desc: 'Crea o edita la agenda de clases grupales de tu gimnasio.', status: 'Próximamente (Fase 2)' },
-            { label: 'Asignación de Rutinas', desc: 'Define WODs o planes de entrenamiento para tus alumnos.', status: 'Próximamente (Fase 3)' },
-          ].map(a => (
-            <div key={a.label} className="rounded-xl p-4" style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <p className="font-semibold text-sm">{a.label}</p>
-              <p className="text-xs opacity-40 mt-0.5">{a.desc}</p>
-              <p className="text-xs mt-1" style={{ color: primaryColor }}>{a.status}</p>
-            </div>
-          ))}
-        </div>
-      </div>
+     
       {/* Modal Tomar Asistencia */}
       <Modal open={!!attendanceClass} onClose={() => { setAttendanceClass(null); setStudents([]); }}
         title={`Asistencia — ${attendanceClass?.session_name || ''}`} maxWidth="max-w-lg">
@@ -296,110 +280,6 @@ export function InstructorTodayPage() {
             </button>
           </div>
         )}
-      </Modal>
-    </div>
-  );
-}
-
-// ============================================================
-// RUTINAS Y WODs
-// ============================================================
-export function InstructorRoutinesPage() {
-  const { gym } = useAuth();
-  const primaryColor = gym?.primaryColor || '#E85D04';
-  const [data, setData] = useState({ plans: [], assignments: [] });
-  const [loading, setLoading] = useState(true);
-  const [showCreate, setShowCreate] = useState(false);
-  const [form, setForm] = useState({ name: '', description: '', content: '' });
-  const [saving, setSaving] = useState(false);
-  const [tab, setTab] = useState('plans');
-
-  const load = async () => {
-    setLoading(true);
-    try { const r = await instructorAPI.getRoutines(); setData(r.data); }
-    catch { toast.error('Error al cargar'); }
-    finally { setLoading(false); }
-  };
-
-  useEffect(() => { load(); }, []);
-
-  const handleCreate = async () => {
-    if (!form.name) return toast.error('Nombre requerido');
-    setSaving(true);
-    try {
-      await instructorAPI.createRoutine(form);
-      toast.success('Rutina creada'); setShowCreate(false); load();
-    } catch (err) { toast.error(err.response?.data?.error || 'Error al crear'); }
-    finally { setSaving(false); }
-  };
-
-  return (
-    <div className="fade-in">
-      {/* Banner */}
-      <div className="rounded-2xl p-5 mb-5 relative overflow-hidden" style={{ background: '#1a1a1a' }}>
-        <div className="absolute right-4 top-4 opacity-5 text-7xl">💪</div>
-        <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: primaryColor }}>MÓDULO DE ENTRENAMIENTO</p>
-        <h1 className="text-xl font-black">Rutinas y WODs</h1>
-        <p className="text-sm opacity-40 mt-1">Crea, edita y programa rutinas grupales o individuales, y asígnalas a los alumnos.</p>
-      </div>
-
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex gap-1">
-          {[['plans', `Planes de Entrenamiento (${data.plans.length})`], ['assignments', `Alumnos Asignados (${data.assignments.length})`]].map(([v, l]) => (
-            <button key={v} onClick={() => setTab(v)}
-              className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
-              style={tab === v ? { backgroundColor: '#1f2937', borderBottom: `2px solid ${primaryColor}` } : { opacity: 0.4 }}>
-              {l}
-            </button>
-          ))}
-        </div>
-        <button onClick={() => setShowCreate(true)} className="btn-primary flex items-center gap-2 text-sm" style={{ backgroundColor: primaryColor }}>
-          <Plus size={14} /> Crear Rutina
-        </button>
-      </div>
-
-      {loading ? <div className="flex justify-center py-16"><Spinner size={28} className="opacity-30" /></div>
-        : tab === 'plans' && data.plans.length === 0
-          ? (
-            <div className="rounded-xl p-12 text-center" style={{ background: '#1a1a1a' }}>
-              <Dumbbell size={36} className="mx-auto mb-4 opacity-20" />
-              <p className="font-semibold opacity-50">No hay rutinas creadas en el gimnasio</p>
-              <p className="text-xs opacity-30 mt-1">Comienza diseñando la primera sesión para tus alumnos.</p>
-              <button onClick={() => setShowCreate(true)} className="mt-4 px-4 py-2 rounded-lg text-sm font-semibold text-white" style={{ backgroundColor: primaryColor }}>
-                Crear rutina ahora
-              </button>
-            </div>
-          )
-          : tab === 'plans'
-            ? data.plans.map(p => (
-              <div key={p.id} className="rounded-xl p-4 mb-2" style={{ background: '#1a1a1a' }}>
-                <p className="font-bold">{p.name}</p>
-                <p className="text-xs opacity-40 mt-0.5">{p.description}</p>
-              </div>
-            ))
-            : data.assignments.length === 0
-              ? <EmptyState icon={User} title="Sin alumnos asignados" />
-              : data.assignments.map(a => (
-                <div key={a.id} className="rounded-xl p-4 mb-2 flex items-center justify-between" style={{ background: '#1a1a1a' }}>
-                  <div>
-                    <p className="font-semibold text-sm">{a.student_name}</p>
-                    <p className="text-xs opacity-40">{a.plan_name}</p>
-                  </div>
-                  <ChevronRight size={16} className="opacity-30" />
-                </div>
-              ))}
-
-      <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Crear Rutina">
-        <div className="flex flex-col gap-4">
-          <Field label="Nombre" required><input className="input-field" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></Field>
-          <Field label="Descripción"><textarea className="input-field" rows={3} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></Field>
-          <div className="flex gap-3">
-            <button onClick={() => setShowCreate(false)} className="btn-secondary flex-1 text-sm">Cancelar</button>
-            <button onClick={handleCreate} disabled={saving} className="btn-primary flex-1 text-sm flex items-center justify-center gap-2" style={{ backgroundColor: primaryColor }}>
-              {saving && <Spinner size={14} className="text-white" />} Crear
-            </button>
-          </div>
-        </div>
       </Modal>
     </div>
   );
@@ -524,8 +404,10 @@ export function InstructorProfilePage() {
         <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-3xl mx-auto mb-3">
           {profile?.photo_url ? <img src={profile.photo_url} className="w-full h-full object-cover rounded-full" /> : '👤'}
         </div>
-        <p className="font-bold text-lg">{profile ? 'Cargando...' : 'Perfil'}</p>
-        <p className="text-xs opacity-40 uppercase tracking-wider" style={{ color: primaryColor }}>ENTRENADOR DE CROSSFIT</p>
+        <p className="font-bold text-lg">{profile?.name || 'Perfil'}</p>
+        {profile?.specialization && (
+          <p className="text-xs opacity-40 uppercase tracking-wider" style={{ color: primaryColor }}>{profile.specialization}</p>
+        )}
         {profile?.cedula && <p className="text-xs opacity-30 mt-0.5">Cédula de acceso: {profile.cedula}</p>}
       </div>
 
