@@ -114,7 +114,6 @@ function AppRoutes() {
       {/* INSTRUCTOR */}
       <Route path="/instructor/*" element={<PrivateRoute allowedRoles={['instructor','admin','super_admin']}><InstructorLayout><Routes>
         <Route index element={<InstructorTodayPage />} />
-        <Route path="routines" element={<InstructorRoutinesPage />} />
         <Route path="wod" element={<InstructorWodPage />} />
         <Route path="attendance" element={<InstructorAttendancePage />} />
         <Route path="profile" element={<InstructorProfilePage />} />
