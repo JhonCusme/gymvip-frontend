@@ -359,19 +359,25 @@ export function SuperSettingsPage() {
 export function SuperSubscriptionsPage() {
   const [subs, setSubs] = useState([]);
   const [plans, setPlans] = useState([]);
+  const [periods, setPeriods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [assignGym, setAssignGym] = useState(null);
   const [payGym, setPayGym] = useState(null);
   const [assignForm, setAssignForm] = useState({ planId: '', customPrice: '', customMaxUsers: '', startDate: '' });
-  const [payForm, setPayForm] = useState({ amount: '', notes: '' });
+  const [payForm, setPayForm] = useState({ amount: '', notes: '', months: 1 });
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
     setLoading(true);
     try {
-      const [s, p] = await Promise.all([superAPI.getSubscriptions(), superAPI.getSaasPlans()]);
+      const [s, p, bp] = await Promise.all([
+        superAPI.getSubscriptions(),
+        superAPI.getSaasPlans(),
+        superAPI.getBillingPeriods()
+      ]);
       setSubs(s.data);
       setPlans(p.data);
+      setPeriods(bp.data);
     } catch { toast.error('Error al cargar'); }
     finally { setLoading(false); }
   };
@@ -413,16 +419,25 @@ export function SuperSubscriptionsPage() {
     finally { setSaving(false); }
   };
 
+  // Calcula el precio según el período elegido
+  const calcPeriodPrice = (monthlyPrice, period) => {
+    if (!monthlyPrice || !period) return 0;
+    const total = parseFloat(monthlyPrice) * period.months;
+    const discount = total * (parseFloat(period.discount_percent) / 100);
+    return Math.round((total - discount) * 100) / 100;
+  };
+
   const handlePay = async () => {
     setSaving(true);
     try {
       await superAPI.registerGymPayment(payGym.id, {
         amount: payForm.amount ? parseFloat(payForm.amount) : null,
-        notes: payForm.notes
+        notes: payForm.notes,
+        months: payForm.months
       });
       toast.success('Pago registrado');
       setPayGym(null);
-      setPayForm({ amount: '', notes: '' });
+      setPayForm({ amount: '', notes: '', months: 1 });
       load();
     } catch (err) { toast.error(err.response?.data?.error || 'Error'); }
     finally { setSaving(false); }
@@ -551,7 +566,31 @@ export function SuperSubscriptionsPage() {
             <p className="text-xs text-gray-500 mb-4">Extiende la suscripción según el período elegido.</p>
             <div className="flex flex-col gap-3">
               <div>
-                <label className="text-xs text-gray-500 block mb-1">Monto $</label>
+                <label className="text-xs text-gray-500 block mb-1.5">Período de pago</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {periods.map(p => {
+                    const price = calcPeriodPrice(payGym.saas_price, p);
+                    const selected = payForm.months === p.months;
+                    return (
+                      <button key={p.id}
+                        onClick={() => setPayForm({ ...payForm, months: p.months, amount: price })}
+                        className={`p-3 rounded-xl text-left transition-all border-2 ${
+                          selected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                        }`}>
+                        <p className="font-semibold text-sm text-gray-900">{p.name}</p>
+                        <p className="text-lg font-black text-gray-900">${price}</p>
+                        {parseFloat(p.discount_percent) > 0 && (
+                          <p className="text-xs text-green-600 font-medium">
+                            {p.label || `-${p.discount_percent}%`}
+                          </p>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 block mb-1">Monto a cobrar $</label>
                 <input type="number" className="input-field w-full" value={payForm.amount}
                   onChange={e => setPayForm({ ...payForm, amount: e.target.value })} />
               </div>
@@ -564,7 +603,7 @@ export function SuperSubscriptionsPage() {
               <div className="flex gap-2 mt-2">
                 <button onClick={() => setPayGym(null)} className="btn-secondary flex-1 text-sm">Cancelar</button>
                 <button onClick={handlePay} disabled={saving} className="btn-primary flex-1 text-sm">
-                  {saving ? 'Guardando...' : 'Registrar pago'}
+                  {saving ? 'Guardando...' : `Registrar pago (${payForm.months} ${payForm.months === 1 ? 'mes' : 'meses'})`}
                 </button>
               </div>
             </div>

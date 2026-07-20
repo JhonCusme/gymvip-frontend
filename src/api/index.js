@@ -91,6 +91,7 @@ export const superAPI = {
   registerGymPayment: (gymId, data) => api.post(`/super/gyms/${gymId}/register-payment`, data),
   toggleGymSuspension: (gymId, suspend) => api.post(`/super/gyms/${gymId}/toggle-suspension`, { suspend }),
   getGymPayments: (gymId) => api.get(`/super/gyms/${gymId}/payments`),
+  getBillingPeriods: () => api.get('/super/billing-periods'),
 };
 
 export const wodAPI = {
