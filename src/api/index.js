@@ -15,10 +15,19 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// INTERCEPTOR RESPONSE — manejar 401
+// INTERCEPTOR RESPONSE — manejar 401 y 402 (servicio suspendido)
 api.interceptors.response.use(
   (res) => res,
   (err) => {
+    // 402 = servicio suspendido por falta de pago
+    if (err.response?.status === 402 && err.response?.data?.error === 'SERVICE_SUSPENDED') {
+      if (window.location.pathname !== '/suspended') {
+        sessionStorage.setItem('suspended_gym', err.response.data.gymName || '');
+        window.location.href = '/suspended';
+      }
+      return Promise.reject(err);
+    }
+
     if (err.response?.status === 401) {
       // No redirigir si ya estamos en login
       if (window.location.pathname === '/login') {

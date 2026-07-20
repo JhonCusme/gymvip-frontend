@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import SuspendedPage from './pages/SuspendedPage';
 
 // Layouts
 import SuperAdminLayout from './components/layout/SuperAdminLayout';
@@ -64,6 +65,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/suspended" element={<SuspendedPage />} />
 
       {/* SUPER ADMIN */}
       <Route path="/super/*" element={<PrivateRoute allowedRoles={['super_admin']}><SuperAdminLayout><Routes>
