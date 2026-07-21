@@ -126,6 +126,7 @@ export const adminAPI = {
   cancelMembership: (membershipId, reason) => api.post(`/admin/memberships/${membershipId}/cancel`, { reason }),
   getUserMembershipsHistory: (userId) => api.get(`/admin/users/${userId}/memberships-history`),
   getBirthdays: (filter) => api.get('/admin/birthdays', { params: { filter } }),
+  getPlanUsage: () => api.get('/admin/plan-usage'),
   // Membresías Types
   getMembershipTypes: () => api.get('/admin/membership-types'),
   createMembershipType: (data) => api.post('/admin/membership-types', data),
@@ -190,6 +191,7 @@ export const receptionAPI = {
   cancelMembership: (membershipId) => api.post(`/recepcion/memberships/${membershipId}/cancel`),
   getUserMembershipsHistory: (userId) => api.get(`/recepcion/users/${userId}/memberships-history`),
   getBirthdays: (filter) => api.get('/recepcion/birthdays', { params: { filter } }),
+  getPlanUsage: () => api.get('/recepcion/plan-usage'),
 };
 
 // ============================================================

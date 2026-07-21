@@ -5,6 +5,7 @@ import { PageHeader, SearchInput, Modal, Field, Spinner, EmptyState, ConfirmDial
 import { Plus, Eye, Edit2, Trash2, CreditCard, Key, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import PlanUsageBanner from '../../components/PlanUsageBanner';
 
 const EMPTY_USER = { cedula: '', name: '', email: '', phone: '', birthDate: '',
   emergencyContactName: '', emergencyContactPhone: '', password: '', confirmPassword: '', role: 'user' };
@@ -136,6 +137,8 @@ const [newPassword, setNewPassword] = useState('');
           </button>
         }
       />
+
+      <PlanUsageBanner fetchUsage={adminAPI.getPlanUsage} />
 
       <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }}
         placeholder="Buscar por nombre, cédula o email..." />

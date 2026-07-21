@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import QRScanner from '../../components/ui/QRScanner';
+import PlanUsageBanner from '../../components/PlanUsageBanner';
 
 // ============================================================
 // DASHBOARD RECEPCIÓN
@@ -143,6 +144,8 @@ export function ReceptionClientsPage() {
     <div className="fade-in">
       <PageHeader title="Clientes"
         action={<button onClick={() => setShowCreate(true)} className="btn-primary flex items-center gap-2 text-sm" style={{ backgroundColor: primaryColor }}><Plus size={15} /> Nuevo Cliente</button>} />
+      
+      <PlanUsageBanner fetchUsage={receptionAPI.getPlanUsage} />
 
       <SearchInput value={search} onChange={(v) => setSearch(v)} placeholder="Buscar por nombre o cédula..." />
 
