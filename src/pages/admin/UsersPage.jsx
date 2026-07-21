@@ -398,12 +398,15 @@ const [newPassword, setNewPassword] = useState('');
                   style={{ background: 'rgba(255,255,255,0.04)' }}>
                   <p className="text-sm font-semibold">{m.type_name}</p>
                   <div className="text-right">
-                    <span className={m.status === 'active' && new Date(m.end_date) >= new Date()
-                      ? 'badge-active' : 'badge-inactive'}>
-                      {m.status === 'active' && new Date(m.end_date) >= new Date() ? 'active' : 'expired'}
+                    <span className={
+                      m.status === 'cancelled' ? 'badge-inactive' :
+                      m.status === 'active' && new Date(m.end_date) >= new Date() ? 'badge-active' : 'badge-inactive'
+                    }>
+                      {m.status === 'cancelled' ? 'Anulada' :
+                       m.status === 'active' && new Date(m.end_date) >= new Date() ? 'Activa' : 'Vencida'}
                     </span>
                     <p className="text-xs opacity-40 mt-0.5">
-                      {new Date(m.start_date).toLocaleDateString('es-EC')} — {new Date(m.end_date).toLocaleDateString('es-EC')}
+                      {new Date(m.start_date.split('T')[0] + 'T00:00:00').toLocaleDateString('es-EC')} — {new Date(m.end_date.split('T')[0] + 'T00:00:00').toLocaleDateString('es-EC')}
                     </p>
                   </div>
                 </div>
