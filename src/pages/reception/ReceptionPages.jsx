@@ -279,6 +279,19 @@ export function ReceptionClientDetailPage() {
     finally { setSaving(false); }
   };
 
+  const toggleActive = async () => {
+    const newState = !client.is_active;
+    const action = newState ? 'reactivar' : 'desactivar';
+    if (!window.confirm(`¿${action.charAt(0).toUpperCase() + action.slice(1)} a ${client.name}?${!newState ? '\n\nDejará de contar en tu plan y no aparecerá en la lista de clientes activos.' : ''}`)) return;
+    try {
+      await receptionAPI.toggleClientActive(clientId, newState);
+      toast.success(newState ? 'Cliente reactivado' : 'Cliente desactivado');
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Error');
+    }
+  };
+
   if (loading) return <div className="flex justify-center py-20"><Spinner size={28} className="opacity-30" /></div>;
   if (!data) return null;
 
@@ -317,11 +330,26 @@ export function ReceptionClientDetailPage() {
         </div>
       </div>
 
+      {/* Estado del cliente */}
+      {client.is_active === false && (
+        <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30">
+          <p className="text-sm text-red-400 font-medium">⚠ Cliente desactivado</p>
+          <p className="text-xs opacity-60 mt-0.5">No cuenta en el plan ni aparece en clientes activos.</p>
+        </div>
+      )}
+
       {/* Acciones */}
-      <div className="mb-5">
-        <button onClick={() => setShowMem(true)} className="w-full p-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all hover:opacity-80"
+      <div className="mb-5 grid grid-cols-2 gap-3">
+        <button onClick={() => setShowMem(true)} className="p-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all hover:opacity-80"
           style={{ background: '#1a1a1a', border: `1px solid rgba(255,255,255,0.08)` }}>
           <CreditCard size={16} /> Nueva Membresía
+        </button>
+        <button onClick={toggleActive}
+          className={`p-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all hover:opacity-80 ${
+            client.is_active === false ? 'text-green-400' : 'text-red-400'
+          }`}
+          style={{ background: '#1a1a1a', border: `1px solid rgba(255,255,255,0.08)` }}>
+          {client.is_active === false ? '✓ Reactivar cliente' : '⊘ Desactivar cliente'}
         </button>
       </div>
 

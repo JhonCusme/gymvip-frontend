@@ -192,6 +192,7 @@ export const receptionAPI = {
   getUserMembershipsHistory: (userId) => api.get(`/recepcion/users/${userId}/memberships-history`),
   getBirthdays: (filter) => api.get('/recepcion/birthdays', { params: { filter } }),
   getPlanUsage: () => api.get('/recepcion/plan-usage'),
+  toggleClientActive: (userId, isActive) => api.patch(`/recepcion/clients/${userId}/toggle-active`, { isActive }),
 };
 
 // ============================================================
