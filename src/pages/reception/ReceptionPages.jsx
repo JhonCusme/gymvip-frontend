@@ -167,11 +167,17 @@ export function ReceptionClientsPage() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                  c.membership_status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-white/40'
-                }`}>
-                  {c.membership_status === 'active' ? 'Activo' : 'Sin membresía'}
-                </span>
+                {c.is_active === false ? (
+                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/20 text-red-400">
+                    Desactivado
+                  </span>
+                ) : (
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                    c.membership_status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-white/40'
+                  }`}>
+                    {c.membership_status === 'active' ? 'Activo' : 'Sin membresía'}
+                  </span>
+                )}
                 <ChevronRight size={16} className="opacity-30" />
               </div>
             </div>
